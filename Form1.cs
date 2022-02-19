@@ -29,8 +29,7 @@ namespace de.thm.fsi.atp
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Object selectedItem = comboBox1.SelectedItem;
-            AtpBl.SetLecture(comboBox1.SelectedIndex); // TODO
+            GuiController.DropdownSelect(sender, e);
         }
 
     }

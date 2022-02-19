@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace de.thm.fsi.atp
 {
@@ -21,7 +22,8 @@ namespace de.thm.fsi.atp
         private static DataTable gridTable;
         public GuiController()
         {
-            frm1 = Program.frm1;
+            frm1 = new Form1();
+            frm1.Show();
             dataGridView = frm1.dataGridView2;
         }
 
@@ -38,6 +40,10 @@ namespace de.thm.fsi.atp
             }
         }
 
+        /// <summary>
+        /// This binds attendance table to DataGridView and sets some properties.
+        /// </summary>
+        /// <param name="iGridTable">DataTable to bind to DataGridView.</param>
         public void UpdateDgv(DataTable iGridTable)
         {
             gridTable = iGridTable;
@@ -48,6 +54,9 @@ namespace de.thm.fsi.atp
             dataGridView.Columns["Studierende"].ReadOnly = true; // editing globally enabled in dgv properties
         }
 
+        /// <summary>
+        /// Updates datagrid if message box result is NO.
+        /// </summary>
         public static void NoUpdateCell()
         {
             BindingSource bSource = new BindingSource();
@@ -69,6 +78,11 @@ namespace de.thm.fsi.atp
             }
         }
 
+        /// <summary>
+        /// This reacts to click on datagrid cells.
+        /// </summary>
+        /// <param name="sender">Sender</param>
+        /// <param name="e">Cell data</param>
         public static void ClickOnDataGrid(object sender, DataGridViewCellEventArgs e)
         {
             //do nothing if header is clicked
@@ -77,35 +91,33 @@ namespace de.thm.fsi.atp
                 // prevent action on column "Studierende"
                 if (e.ColumnIndex > 1)
                 {
-                    //show bool value in popup
-                    //string titlePopup = "Value (r" + (e.RowIndex + 1).ToString() + ",c" + e.ColumnIndex.ToString() + ")";
                     string strValue = dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-
                     if (String.IsNullOrEmpty(strValue))
                     {
                         strValue = "False";
                     }
-                    //MessageBox.Show(strValue, titlePopup);
-                    //MessageBox.Show(dataGridView2.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), "Bool value");
 
                     // show confirmation popup
                     string question = "Anwesenheit ändern für:" + "\n" + dataGridView.Rows[e.RowIndex].Cells[1].Value.ToString();
-                    //DialogResult dr = MessageBox.Show("Anwesenheit ändern?", "Änderung der Anwesenheit",
                     DialogResult dr = MessageBox.Show(question, "Änderung der Anwesenheit",
                                         MessageBoxButtons.YesNo, MessageBoxIcon.Question,
                                         MessageBoxDefaultButton.Button1);
                     if (dr == DialogResult.Yes)
                     {
-                        //UpdateText("Yes");
                         AtpBl.UpdateCell(e.RowIndex, e.ColumnIndex, bool.Parse(strValue));
                     }
                     else if (dr == DialogResult.No)
                     {
-                        //UpdateText("No");
                         NoUpdateCell();
                     }
                 }
             }
+        }
+
+        public static void DropdownSelect(object sender, EventArgs e)
+        {
+            Object selectedItem = frm1.comboBox1.SelectedItem;
+            AtpBl.SetLecture(frm1.comboBox1.SelectedIndex);
         }
     }
 }

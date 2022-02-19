@@ -10,23 +10,19 @@ namespace de.thm.fsi.atp
 {
     internal static class Program
     {
-        public static Form1 frm1;
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
-            frm1 = new Form1();
-
             Thread mainThread = Thread.CurrentThread;
             //StartThreads();
             AtpBl atpBl = new AtpBl("192.168.178.101");
 
             Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(frm1);
+            Application.Run();
         }
 
         private static void StartThreads()
