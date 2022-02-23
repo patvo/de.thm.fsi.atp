@@ -42,16 +42,17 @@ namespace de.thm.fsi.atp
             readerAddr = IPAddress.Parse(cReaderAddr);
 
             dataController = new DataController();
-            guiController = new GuiController();
+            guiController = new GuiController(this);
 
             // Fill initial view
             lecturesTable = dataController.GetAllLecturesGroups();
             guiController.FillComboBox(lecturesTable);
+            guiController.StartGui();
         }
 
 
 
-        private static void FillDataGrid()
+        private void FillDataGrid()
         {
             // different dates for one lecture
             DataTable diffDatesTable = dataController.GetDiffDatesPerLecture(idGroup, idLecture);
@@ -182,8 +183,7 @@ namespace de.thm.fsi.atp
         /// Sets class attributes according to dropdown list selection.
         /// Initiates DataGrid fill.
         /// </summary>
-        //public static void SetLecture(string lecture)
-        public static void SetLecture(int index)
+        public void SetLecture(int index)
         {
             idLecture = int.Parse(lecturesTable.Rows[index]["idLehrveranstaltung"].ToString());
             idGroup = int.Parse(lecturesTable.Rows[index]["idStudiengruppe"].ToString());
@@ -193,15 +193,10 @@ namespace de.thm.fsi.atp
             FillDataGrid();
         }
 
-        public static void NoUpdateCell()
-        {
-            //UpdateDGV();
-        }
-
         /// <summary>
         /// Changes cell value for datagrid selection.
         /// </summary>
-        public static void UpdateCell(int rowIdx, int columnIdx, bool value)
+        public void UpdateCell(int rowIdx, int columnIdx, bool value)
         {
 
 

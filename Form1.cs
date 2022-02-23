@@ -29,7 +29,7 @@ namespace de.thm.fsi.atp
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            GuiController.DropdownSelect(sender, e);
+           GuiController.DropdownSelect(sender, e);
         }
 
     }

@@ -17,28 +17,37 @@ namespace de.thm.fsi.atp
         static void Main()
         {
             Thread mainThread = Thread.CurrentThread;
+
+            ////////
+            // For demo purposes only 1 instance is need,
+            // because there is only one physical RFID reader connected.
+            // Therefore all other rfid readers listed in db are NOT instantiated.
+            ////////
             //StartThreads();
-            AtpBl atpBl = new AtpBl("192.168.178.101");
+            StartBl("192.168.178.101");
 
             Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             Application.Run();
         }
 
+        /// <summary>
+        /// Start own thread for every RFID reader listed in database.
+        /// </summary>
         private static void StartThreads()
         {
             foreach (DataRow row in DataController.GetReader().Rows)
             {
-                Thread t = new Thread(() => StartController(row["ipAdresse"].ToString()));
+                Thread t = new Thread(() => StartBl(row["ipAdresse"].ToString()));
                 t.Start();
                 Thread.Sleep(100);
             }
         }
         /// <summary>
-        /// 
+        /// Start business logic instance with given IP address of RFID reader.
         /// </summary>
         /// <param name="readerAddr">IP address of RFID reader</param>
-        private static void StartController(string readerAddr)
+        private static void StartBl(string readerAddr)
         {
             AtpBl atpBl = new AtpBl(readerAddr);
         }

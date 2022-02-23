@@ -20,11 +20,21 @@ namespace de.thm.fsi.atp
         private static Form1 frm1;
         private static DataGridView dataGridView;
         private static DataTable gridTable;
-        public GuiController()
+        private static AtpBl atpBl;
+
+        public GuiController(AtpBl cAtpBl)
         {
+            atpBl = cAtpBl;
             frm1 = new Form1();
-            frm1.Show();
             dataGridView = frm1.dataGridView2;
+        }
+
+        /// <summary>
+        /// This starts Winform gui.
+        /// </summary>
+        public void StartGui()
+        {
+            frm1.ShowDialog();
         }
 
         /// <summary>
@@ -66,6 +76,12 @@ namespace de.thm.fsi.atp
             dataGridView.Columns["Studierende"].ReadOnly = true; // editing globally enabled in dgv properties
         }
 
+        /// <summary>
+        /// Sets title of selected lecture.
+        /// </summary>
+        /// <param name="nameSpecialty">Fachrichtung</param>
+        /// <param name="nameCourse">Studiengang</param>
+        /// <param name="nameLecture">Lehrveranstaltung</param>
         public void SetTitle(string nameSpecialty, string nameCourse, string nameLecture)
         {
             if (String.IsNullOrEmpty(nameSpecialty))
@@ -104,7 +120,7 @@ namespace de.thm.fsi.atp
                                         MessageBoxDefaultButton.Button1);
                     if (dr == DialogResult.Yes)
                     {
-                        AtpBl.UpdateCell(e.RowIndex, e.ColumnIndex, bool.Parse(strValue));
+                        atpBl.UpdateCell(e.RowIndex, e.ColumnIndex, bool.Parse(strValue));
                     }
                     else if (dr == DialogResult.No)
                     {
@@ -114,10 +130,15 @@ namespace de.thm.fsi.atp
             }
         }
 
+        /// <summary>
+        /// Sets lecture according to dropdown menu selection.
+        /// </summary>
+        /// <param name="sender">Sender</param>
+        /// <param name="e">Selection Data</param>
         public static void DropdownSelect(object sender, EventArgs e)
         {
             Object selectedItem = frm1.comboBox1.SelectedItem;
-            AtpBl.SetLecture(frm1.comboBox1.SelectedIndex);
+            atpBl.SetLecture(frm1.comboBox1.SelectedIndex);
         }
     }
 }
