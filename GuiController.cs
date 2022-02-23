@@ -20,6 +20,7 @@ namespace de.thm.fsi.atp
         private static Form1 frm1;
         private static DataGridView dataGridView;
         private static DataTable gridTable;
+        private static ListBox listBox;
         private static AtpBl atpBl;
 
         public GuiController(AtpBl cAtpBl)
@@ -27,6 +28,7 @@ namespace de.thm.fsi.atp
             atpBl = cAtpBl;
             frm1 = new Form1();
             dataGridView = frm1.dataGridView2;
+            listBox = frm1.listBox1;
         }
 
         /// <summary>
@@ -48,6 +50,17 @@ namespace de.thm.fsi.atp
                 string lecture = row["bezeichnung"].ToString();
                 frm1.comboBox1.Items.Add(group + " - " + lecture);
             }
+        }
+
+        /// <summary>
+        /// This adds a some text to listbox.
+        /// </summary>
+        /// <param name="text">Text string</param>
+        public void AddToListbox(string text)
+        {
+            // For demo purposes cross-thread operations are permitted for ListBox!
+            ListBox.CheckForIllegalCrossThreadCalls = false;
+            listBox.Items.Add(text);
         }
 
         /// <summary>

@@ -50,8 +50,8 @@ namespace de.thm.fsi.atp
             dataController = new DataController();
             guiController = new GuiController(this);
 
-
-            Thread t = new Thread(() => StartReaderConnection());
+            // Start own thread for TCP/IP listener
+            Thread t = new Thread(() => StartReaderConnection()); // TODO
             t.Start();
 
             // Fill initial view and start gui
@@ -219,9 +219,11 @@ namespace de.thm.fsi.atp
                 // Enter listening loop
                 while (true)
                 {
+                    guiController.AddToListbox("Waiting for a connection... ");
                     Console.Write("Waiting for a connection... ");
                     TcpClient clientIn = server.AcceptTcpClient();
                     Console.WriteLine("## " + readerAddr + " connected!");
+                    guiController.AddToListbox("## " + readerAddr + " connected!");
 
                     dataReceive = null;
                     // ASCII encoding for reader communication
@@ -239,6 +241,7 @@ namespace de.thm.fsi.atp
                         // Translate data bytes to ASCII string
                         dataReceive = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
                         Console.WriteLine("Received: {0}", dataReceive);
+                        guiController.AddToListbox("Received: {0}" + dataReceive.ToString());
 
                         //
                         if (Check() == true)
@@ -269,7 +272,7 @@ namespace de.thm.fsi.atp
             }
             finally
             {
-                // Stop listening for new clients.
+                // Stop listening
                 server.Stop();
             }
 
@@ -283,7 +286,7 @@ namespace de.thm.fsi.atp
         /// This checks if there is a match of scanned card UID in database
         /// </summary>
         /// <returns>Bool</returns>
-        private static bool Check()
+        private bool Check()
         {
             // TODO
             return false;
