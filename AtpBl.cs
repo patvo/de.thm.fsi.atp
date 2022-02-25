@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -39,6 +40,7 @@ namespace de.thm.fsi.atp
         private static string nameCourse;
         private static string nameSpecialty;
         private static DataTable lecturesTable;
+        private static DataTable studentTable;
         private static DataTable gridTable;
         // Attributes for user interface:
         private static GuiController guiController;
@@ -108,7 +110,7 @@ namespace de.thm.fsi.atp
             studTable.Columns.Add("date", typeof(DataTable));
 
             // Get student list for lecture
-            DataTable studentTable = dataController.GetStudentsPerLecture(idGroup, idLecture);
+            studentTable = dataController.GetStudentsPerLecture(idGroup, idLecture);
             foreach (DataRow row in studentTable.Rows)
             {
                 int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
@@ -219,12 +221,7 @@ namespace de.thm.fsi.atp
                 // Enter listening loop
                 while (true)
                 {
-                    guiController.AddToListbox("Waiting for a connection... ");
-                    Console.Write("Waiting for a connection... ");
                     TcpClient clientIn = server.AcceptTcpClient();
-                    Console.WriteLine("## " + readerAddr + " connected!");
-                    guiController.AddToListbox("## " + readerAddr + " connected!");
-
                     dataReceive = null;
                     // ASCII encoding for reader communication
                     Byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
@@ -240,26 +237,20 @@ namespace de.thm.fsi.atp
                     {
                         // Translate data bytes to ASCII string
                         dataReceive = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                        Console.WriteLine("Received: {0}", dataReceive);
-                        guiController.AddToListbox("Received: {0}" + dataReceive.ToString());
+                        Write("Chipkartennummer: " + dataReceive.ToString());
 
-                        //
-                        if (Check() == true)
+                        // Check for match
+                        if (Check(dataReceive.ToString()) == true)
                         {
                             // Send back positive response
                             streamOut.Write(data_green, 0, data_green.Length);
-                            Console.WriteLine("Accepted!");
                         }
                         else
                         {
                             // Send back a negative response
                             streamOut.Write(data_red, 0, data_red.Length);
-                            Console.WriteLine("Denied!");
                         }
-                        //
-
                     }
-
                     // Shutdown and end connection
                     clientIn.Close();
                     streamIn.Close();
@@ -268,28 +259,40 @@ namespace de.thm.fsi.atp
             }
             catch (SocketException e)
             {
-                Console.WriteLine("SocketException: {0}", e);
+                Write("SocketException: " + e.ToString());
             }
             finally
             {
                 // Stop listening
                 server.Stop();
             }
-
-            Console.WriteLine("\n## Controller crashed.");
-            Console.Read();
-
-            //Console.SetOut(writer);
         }
 
         /// <summary>
-        /// This checks if there is a match of scanned card UID in database
+        /// This checks if there is a match of scanned card UID in students of lecture.
         /// </summary>
         /// <returns>Bool</returns>
-        private bool Check()
+        private bool Check(string dataReceive)
         {
-            // TODO
+            foreach (DataRow row in studentTable.Rows)
+            {
+                if (String.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                {
+                    Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
+                    return true;
+                }
+            }
+            Write("❌ Abgelehnt!");
             return false;
+        }
+
+        /// <summary>
+        /// This passes text output to listbox. 
+        /// </summary>
+        /// <param name="text">Text string</param>
+        private void Write(string text)
+        {
+            guiController.AddToListbox(text);
         }
 
     }
