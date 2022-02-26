@@ -37,12 +37,14 @@ namespace de.thm.fsi.atp
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
+        private static int idCurrLectureDate;
         private static string nameLecture;
         private static string nameCourse;
         private static string nameSpecialty;
         private static DataTable lecturesTable;
         private static DataTable studentTable;
         private static DataTable gridTable;
+        private static DataTable currStudentTable;
         private static DataTable currLectTable;
         // Attributes for user interface:
         private static GuiController gc;
@@ -61,9 +63,9 @@ namespace de.thm.fsi.atp
             // Fill initial view
             lecturesTable = dc.GetAllLecturesGroups();
             gc.FillComboBox(lecturesTable);
+            PrepareMatching();
 
             // For demo output
-            FindCurrentLecture();
             WriteRoomAndLecture();
 
             gc.StartGui();
@@ -78,6 +80,19 @@ namespace de.thm.fsi.atp
             string strDate = date.ToString("yyyyMMdd");
             string strTime = date.ToString("HHmmss");
             currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
+        }
+
+        private void PrepareMatching()
+        {
+            FindCurrentLecture();
+
+            foreach (DataRow row in currLectTable.Rows)
+            {
+                int idGroup = Convert.ToInt32(row["idStudiengruppe"]);
+                int idLecture = Convert.ToInt32(row["idLehrveranstaltung"]);
+                idCurrLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
+                currStudentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
+            }
         }
 
         /// <summary>
@@ -236,7 +251,7 @@ namespace de.thm.fsi.atp
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
                         // Check for match
-                        if (Check(dataReceive.ToString()) == true)
+                        if (CheckStudentCard(dataReceive.ToString()) == true)
                         {
                             // Send back positive response
                             streamOut.Write(data_green, 0, data_green.Length);
@@ -266,15 +281,17 @@ namespace de.thm.fsi.atp
 
         /// <summary>
         /// This checks if there is a match of scanned card UID in students of lecture.
+        /// If card matches current lecture an attendance insert on the database is performed.
         /// </summary>
         /// <returns>Bool</returns>
-        private bool Check(string dataReceive)
+        private bool CheckStudentCard(string dataReceive)
         {
-            foreach (DataRow row in studentTable.Rows)
+            foreach (DataRow row in currStudentTable.Rows)
             {
                 if (String.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
                     Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
+                    dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
                     return true;
                 }
             }
