@@ -28,6 +28,36 @@ namespace de.thm.fsi.atp
        dataAdapter = new MySqlDataAdapter();
     }
         /// <summary>
+        /// This returns the currently ongoing lecture for a room.
+        /// </summary>
+        /// <param name="ip">Ip address of RFID reader.</param>
+        /// <param name="date"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        //public DataTable GetCurrLectForRoom(string ip, string date, string time)
+        //{
+        //    //DataTable dtLect = new DataTable();
+        //    //String sqlLectRoom = "";
+        //    //dataAdapter.SelectCommand = new MySqlCommand(sqlLectRoom, connection);
+        //    //dataAdapter.Fill(dtLect);
+        //    //return dtLect;
+        //}
+
+        /// <summary>
+        /// This returns the room for a RFID readers IP address.
+        /// </summary>
+        /// <param name="ip">IP address</param>
+        /// <returns></returns>
+        public DataTable GetRoom(string ip)
+        {
+            DataTable dtRoom = new DataTable();
+            String sqlRoom = "Select raum.kurzbezeichnung, raum.bezeichnung From raum Inner Join lesegeraet On raum.inventarnummer = lesegeraet.inventarnummer Where lesegeraet.ipAdresse = \"" + ip + "\"";
+            dataAdapter.SelectCommand = new MySqlCommand(sqlRoom, connection);
+            dataAdapter.Fill(dtRoom);
+            return dtRoom;
+        }
+
+        /// <summary>
         /// This returns a table of all distinct dates for one lecture.
         /// </summary>
         /// <param name="idGroup">idStudiengruppe</param>

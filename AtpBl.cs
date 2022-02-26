@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Windows.Forms.AxHost;
 
 
 namespace de.thm.fsi.atp
@@ -33,7 +34,7 @@ namespace de.thm.fsi.atp
         private static Int32 portReader = 10001;
         private static String dataReceive = null;
         // Attributes for matching:
-        private static DataController dataController;
+        private static DataController dc;
         private static int idLecture;
         private static int idGroup;
         private static string nameLecture;
@@ -43,35 +44,51 @@ namespace de.thm.fsi.atp
         private static DataTable studentTable;
         private static DataTable gridTable;
         // Attributes for user interface:
-        private static GuiController guiController;
+        private static GuiController gc;
 
         public AtpBl(String cReaderAddr)
         {
             readerAddr = IPAddress.Parse(cReaderAddr);
 
-            dataController = new DataController();
-            guiController = new GuiController(this);
+            dc = new DataController();
+            gc = new GuiController(this);
 
             // Start own thread for TCP/IP listener
             Thread t = new Thread(() => StartReaderConnection()); // TODO
             t.Start();
 
-            // Fill initial view and start gui
-            lecturesTable = dataController.GetAllLecturesGroups();
-            guiController.FillComboBox(lecturesTable);
-            guiController.StartGui();
+            //FindCurrentLecture();
 
+            // Fill initial view and start gui
+            lecturesTable = dc.GetAllLecturesGroups();
+            gc.FillComboBox(lecturesTable);
+            WriteRoom();
+            gc.StartGui();
 
         }
+
+        //private void FindCurrentLecture()
+        //{
+        //    //// only get last hour
+        //    //int lastHour = DateTime.Now.Hour;
+        //    //TimeSpan ts = TimeSpan.FromHours(lastHour);
+        //    //string strTime = ts.ToString("hh''mm''ss");
+
+        //    DateTime date = DateTime.Now;
+        //    string strDate = date.ToString("yyyyMMdd");
+        //    string strTime = date.ToString("HHmmss");
+
+        //    DataTable currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
+        //}
 
 
         /// <summary>
         /// This gathers data from the database and fills the datagrid table.
         /// </summary>
-        private void FillDataGrid()
+        private void FillDataGridTable()
         {
             // different dates for one lecture
-            DataTable diffDatesTable = dataController.GetDiffDatesPerLecture(idGroup, idLecture);
+            DataTable diffDatesTable = dc.GetDiffDatesPerLecture(idGroup, idLecture);
             // Add named column for every single date
             gridTable = new DataTable();
             gridTable.Columns.Add("idStudent", typeof(int));
@@ -110,7 +127,7 @@ namespace de.thm.fsi.atp
             studTable.Columns.Add("date", typeof(DataTable));
 
             // Get student list for lecture
-            studentTable = dataController.GetStudentsPerLecture(idGroup, idLecture);
+            studentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
             foreach (DataRow row in studentTable.Rows)
             {
                 int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
@@ -118,7 +135,7 @@ namespace de.thm.fsi.atp
             }
 
             // All attendances for one lecture
-            DataTable attTable = dataController.GetAttendancesPerLecture(idGroup, idLecture);
+            DataTable attTable = dc.GetAttendancesPerLecture(idGroup, idLecture);
 
             // Extract students from attendance table, concatenate full name + id, fill distinct name table
             foreach (DataRow row in attTable.Rows)
@@ -164,8 +181,8 @@ namespace de.thm.fsi.atp
             }
 
             // Update UI
-            guiController.SetTitle(nameSpecialty, nameCourse, nameLecture);
-            guiController.UpdateDgv(gridTable);
+            gc.SetTitle(nameSpecialty, nameCourse, nameLecture);
+            gc.UpdateDgv(gridTable);
         }
 
 
@@ -180,7 +197,7 @@ namespace de.thm.fsi.atp
             nameLecture = lecturesTable.Rows[index]["bezeichnung"].ToString();
             nameCourse = lecturesTable.Rows[index]["studiengangLang"].ToString();
             nameSpecialty = lecturesTable.Rows[index]["fachrichtungLang"].ToString();
-            FillDataGrid();
+            FillDataGridTable();
         }
 
         /// <summary>
@@ -194,14 +211,14 @@ namespace de.thm.fsi.atp
             if (value == true)
             {
                 gridTable.Rows[rowIdx][columnIdx] = false;
-                dataController.DeleteAttendance(idStudent, idLectureDate);
+                dc.DeleteAttendance(idStudent, idLectureDate);
             }
             else
             {
                 gridTable.Rows[rowIdx][columnIdx] = true;
-                dataController.InsertAttendance(idStudent, idLectureDate);
+                dc.InsertAttendance(idStudent, idLectureDate);
             }
-            guiController.UpdateDgv(gridTable);
+            gc.UpdateDgv(gridTable);
         }
 
         /// <summary>
@@ -287,12 +304,22 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
-        /// This passes text output to listbox. 
+        /// This passes text output to listbox.
+        /// Mainly used for simple text output for demo.
         /// </summary>
         /// <param name="text">Text string</param>
         private void Write(string text)
         {
-            guiController.AddToListbox(text);
+            gc.AddToListbox(text);
+        }
+
+        private void WriteRoom()
+        {
+            DataTable room = dc.GetRoom(readerAddr.ToString());
+            foreach (DataRow row in room.Rows)
+            {
+                Write("Lesegerät mit IP " + readerAddr.ToString() + " in "+ row["bezeichnung"].ToString() + ".");
+            }
         }
 
     }

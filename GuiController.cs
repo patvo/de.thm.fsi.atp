@@ -61,6 +61,9 @@ namespace de.thm.fsi.atp
             // For demo purposes cross-thread operations are permitted for ListBox!
             ListBox.CheckForIllegalCrossThreadCalls = false;
             listBox.Items.Add(text);
+            // Autoscroll listbox
+            listBox.SelectedIndex = listBox.Items.Count - 1;
+            listBox.SelectedIndex = -1;
         }
 
         /// <summary>
