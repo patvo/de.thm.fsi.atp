@@ -43,6 +43,7 @@ namespace de.thm.fsi.atp
         private static DataTable lecturesTable;
         private static DataTable studentTable;
         private static DataTable gridTable;
+        private static DataTable currLectTable;
         // Attributes for user interface:
         private static GuiController gc;
 
@@ -57,37 +58,34 @@ namespace de.thm.fsi.atp
             Thread t = new Thread(() => StartReaderConnection());
             t.Start();
 
-            //FindCurrentLecture();
-
-            // Fill initial view and start gui
+            // Fill initial view
             lecturesTable = dc.GetAllLecturesGroups();
             gc.FillComboBox(lecturesTable);
-            WriteRoom();
-            gc.StartGui();
 
+            // For demo output
+            FindCurrentLecture();
+            WriteRoomAndLecture();
+
+            gc.StartGui();
         }
 
-        //private void FindCurrentLecture()
-        //{
-        //    //// Only get last hour
-        //    //int lastHour = DateTime.Now.Hour;
-        //    //TimeSpan ts = TimeSpan.FromHours(lastHour);
-        //    //string strTime = ts.ToString("hh''mm''ss");
-
-        //    DateTime date = DateTime.Now;
-        //    string strDate = date.ToString("yyyyMMdd");
-        //    string strTime = date.ToString("HHmmss");
-
-        //    DataTable currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
-        //}
-
+        /// <summary>
+        /// This finds current lecture of the room.
+        /// </summary>
+        private void FindCurrentLecture()
+        {
+            DateTime date = DateTime.Now;
+            string strDate = date.ToString("yyyyMMdd");
+            string strTime = date.ToString("HHmmss");
+            currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
+        }
 
         /// <summary>
         /// This gathers data from the database and fills the datagrid table.
         /// </summary>
         private void FillDataGridTable()
         {
-            // different dates for one lecture
+            // Different dates for one lecture
             DataTable diffDatesTable = dc.GetDiffDatesPerLecture(idGroup, idLecture);
             // Add named column for every single date
             gridTable = new DataTable();
@@ -98,7 +96,7 @@ namespace de.thm.fsi.atp
             foreach (DataRow row in diffDatesTable.Rows)
             {
                 string strDate;
-                // check if date is already used as column name, if add number to name
+                // Check if date is already used as column name, if add number to name
                 if (date != DateTime.Parse(row["datum"].ToString()))
                 {
                     i = 1;
@@ -294,13 +292,23 @@ namespace de.thm.fsi.atp
             gc.AddToListbox(text);
         }
 
-        private void WriteRoom()
+        /// <summary>
+        /// This writes the room, ip and current lecture to listbox.
+        /// For demo purposes.
+        /// </summary>
+        private void WriteRoomAndLecture()
         {
             DataTable room = dc.GetRoom(readerAddr.ToString());
             foreach (DataRow row in room.Rows)
             {
                 Write("Lesegerät mit IP " + readerAddr.ToString() + " in "+ row["bezeichnung"].ToString() + ".");
             }
+
+            foreach (DataRow row in currLectTable.Rows)
+            {
+                Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
+            }
+            
         }
 
     }

@@ -34,14 +34,14 @@ namespace de.thm.fsi.atp
         /// <param name="date"></param>
         /// <param name="time"></param>
         /// <returns></returns>
-        //public DataTable GetCurrLectForRoom(string ip, string date, string time)
-        //{
-        //    //DataTable dtLect = new DataTable();
-        //    //String sqlLectRoom = "";
-        //    //dataAdapter.SelectCommand = new MySqlCommand(sqlLectRoom, connection);
-        //    //dataAdapter.Fill(dtLect);
-        //    //return dtLect;
-        //}
+        public DataTable GetCurrLectForRoom(string ip, string date, string time)
+        {
+            DataTable dtLect = new DataTable();
+            String sqlLectRoom = "Select lehrveranstaltungstermin.idLehrveranstaltungstermin, lehrveranstaltungstermin.idStudiengruppe, lehrveranstaltungstermin.idLehrveranstaltung, lehrveranstaltungstermin.zeitVon, lehrveranstaltungstermin.zeitBis, lehrveranstaltung.bezeichnung From lehrveranstaltungstermin Inner Join lehrveranstaltungstermin_has_raum On lehrveranstaltungstermin_has_raum.idLehrveranstaltungstermin = lehrveranstaltungstermin.idLehrveranstaltungstermin And lehrveranstaltungstermin_has_raum.idStudiengruppe = lehrveranstaltungstermin.idStudiengruppe And lehrveranstaltungstermin_has_raum.idLehrveranstaltung = lehrveranstaltungstermin.idLehrveranstaltung Inner Join raum On lehrveranstaltungstermin_has_raum.idRaum = raum.idRaum And lehrveranstaltungstermin_has_raum.inventarnummer = raum.inventarnummer Inner Join lesegeraet On raum.inventarnummer = lesegeraet.inventarnummer Inner Join studiengruppe_has_lehrveranstaltung On lehrveranstaltungstermin.idStudiengruppe = studiengruppe_has_lehrveranstaltung.idStudiengruppe And lehrveranstaltungstermin.idLehrveranstaltung = studiengruppe_has_lehrveranstaltung.idLehrveranstaltung Inner Join lehrveranstaltung On studiengruppe_has_lehrveranstaltung.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Where lesegeraet.ipAdresse = \"" + ip + "\" And lehrveranstaltungstermin.datum = " + date + " And lehrveranstaltungstermin.zeitVon <= " + time + " And lehrveranstaltungstermin.zeitBis >= " + time;
+            dataAdapter.SelectCommand = new MySqlCommand(sqlLectRoom, connection);
+            dataAdapter.Fill(dtLect);
+            return dtLect;
+        }
 
         /// <summary>
         /// This returns the room for a RFID readers IP address.
