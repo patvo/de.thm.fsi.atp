@@ -120,7 +120,7 @@ namespace de.thm.fsi.atp
                 gridTable.Columns.Add(column);
             }
 
-            // Student table: student + attendance dates
+            // studTable = student + attendance dates
             DataTable studTable = new DataTable();
             studTable.Columns.Add("idStudent", typeof(int));
             studTable.Columns.Add("concat", typeof(string));
