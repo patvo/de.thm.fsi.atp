@@ -50,7 +50,7 @@ namespace de.thm.fsi.atp
             this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(245)))), ((int)(((byte)(247)))));
             this.label2.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(36)))), ((int)(((byte)(52)))));
-            this.label2.Location = new System.Drawing.Point(270, 81);
+            this.label2.Location = new System.Drawing.Point(270, 70);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(0, 45);
             this.label2.TabIndex = 17;

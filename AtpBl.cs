@@ -53,8 +53,8 @@ namespace de.thm.fsi.atp
             dc = new DataController();
             gc = new GuiController(this);
 
-            // Start own thread for TCP/IP listener
-            Thread t = new Thread(() => StartReaderConnection()); // TODO
+            // Start own thread for TCP/IP listener loop
+            Thread t = new Thread(() => StartReaderConnection());
             t.Start();
 
             //FindCurrentLecture();
@@ -69,7 +69,7 @@ namespace de.thm.fsi.atp
 
         //private void FindCurrentLecture()
         //{
-        //    //// only get last hour
+        //    //// Only get last hour
         //    //int lastHour = DateTime.Now.Hour;
         //    //TimeSpan ts = TimeSpan.FromHours(lastHour);
         //    //string strTime = ts.ToString("hh''mm''ss");
@@ -125,35 +125,16 @@ namespace de.thm.fsi.atp
             studTable.Columns.Add("idStudent", typeof(int));
             studTable.Columns.Add("concat", typeof(string));
             studTable.Columns.Add("date", typeof(DataTable));
-
             // Get student list for lecture
             studentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
             foreach (DataRow row in studentTable.Rows)
             {
                 int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
-                studTable.Rows.Add(matrikelnummer);
+                studTable.Rows.Add(matrikelnummer, row["nachname"].ToString() + ", " + row["vorname"].ToString() + "\n" + matrikelnummer.ToString());
             }
 
-            // All attendances for one lecture
+            // Get all attendances for one lecture
             DataTable attTable = dc.GetAttendancesPerLecture(idGroup, idLecture);
-
-            // Extract students from attendance table, concatenate full name + id, fill distinct name table
-            foreach (DataRow row in attTable.Rows)
-            {
-                int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
-                string nachname = row["nachname"].ToString();
-                string vorname = row["vorname"].ToString();
-
-                string concat = vorname + " " + nachname + "\n" + matrikelnummer.ToString();
-                foreach (DataRow rowSum in studTable.Rows)
-                {
-                    if (int.Parse(rowSum["idStudent"].ToString()) == matrikelnummer)
-                    {
-                        rowSum["concat"] = concat;
-                    }
-                }
-            }
-
             // Set cell value true in gridTable if studend attended
             int index = 0;
             foreach (DataRow rowSum in studTable.Rows)
