@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
 namespace de.thm.fsi.atp
@@ -21,12 +15,12 @@ namespace de.thm.fsi.atp
         private MySqlConnection connection;
         private MySqlDataAdapter dataAdapter;
 
-    public DataController()
-    {
-       connection = new MySqlConnection(dbConnectionString);
-       connection.Open();
-       dataAdapter = new MySqlDataAdapter();
-    }
+        public DataController()
+        {
+            connection = new MySqlConnection(dbConnectionString);
+            connection.Open();
+            dataAdapter = new MySqlDataAdapter();
+        }
         /// <summary>
         /// This returns the currently ongoing lecture for a room.
         /// </summary>

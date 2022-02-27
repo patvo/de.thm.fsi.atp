@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml.Linq;
-using static System.Windows.Forms.AxHost;
 
 
 namespace de.thm.fsi.atp
@@ -33,7 +24,7 @@ namespace de.thm.fsi.atp
         private static IPAddress readerAddr;
         private static Int32 portReader = 10001;
         private static String dataReceive = null;
-        // Attributes for matching:
+        // Attributes for matching datagrid output:
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
@@ -282,6 +273,7 @@ namespace de.thm.fsi.atp
         /// <summary>
         /// This checks if there is a match of scanned card UID in students of lecture.
         /// If card matches current lecture an attendance insert on the database is performed.
+        /// Additionally there is an output for the demo purposes.
         /// </summary>
         /// <returns>Bool</returns>
         private bool CheckStudentCard(string dataReceive)
@@ -318,14 +310,14 @@ namespace de.thm.fsi.atp
             DataTable room = dc.GetRoom(readerAddr.ToString());
             foreach (DataRow row in room.Rows)
             {
-                Write("Lesegerät mit IP " + readerAddr.ToString() + " in "+ row["bezeichnung"].ToString() + ".");
+                Write("Lesegerät mit IP " + readerAddr.ToString() + " in " + row["bezeichnung"].ToString() + ".");
             }
 
             foreach (DataRow row in currLectTable.Rows)
             {
                 Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
             }
-            
+
         }
 
     }
