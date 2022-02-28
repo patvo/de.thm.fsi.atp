@@ -36,6 +36,16 @@ namespace de.thm.fsi.atp
             return dtLect;
         }
 
+        public DataTable GetDocent(int idGroup, int idLecture)
+        {
+            DataTable dtDocent = new DataTable();
+            string sqlDocent = "Select dozent.chipkartennummer, dozent.vorname, dozent.nachname, dozent.anrede, dozent.titel From studiengruppe_has_lehrveranstaltung Inner Join lehrveranstaltung On studiengruppe_has_lehrveranstaltung.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join dozent_has_lehrveranstaltung On dozent_has_lehrveranstaltung.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join dozent On dozent_has_lehrveranstaltung.dozentennummer = dozent.dozentennummer Where studiengruppe_has_lehrveranstaltung.idStudiengruppe = " + idGroup + " And studiengruppe_has_lehrveranstaltung.idLehrveranstaltung = " + idLecture;
+            dataAdapter.SelectCommand = new MySqlCommand(sqlDocent, connection);
+            dataAdapter.Fill(dtDocent);
+            return dtDocent;
+        }
+
+
         /// <summary>
         /// This returns the room for a RFID readers IP address.
         /// </summary>

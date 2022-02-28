@@ -25,6 +25,7 @@ namespace de.thm.fsi.atp
         private static readonly int portReader = 10001;
         private static string dataReceive = null;
         // Attributes for matching datagrid output:
+        private static bool checkForStudents = false;
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
@@ -37,6 +38,7 @@ namespace de.thm.fsi.atp
         private static DataTable gridTable;
         private static DataTable currStudentTable;
         private static DataTable currLectTable;
+        private static DataTable currDocTable;
         // Attributes for user interface:
         private static GuiController gc;
 
@@ -85,6 +87,7 @@ namespace de.thm.fsi.atp
                 int idLecture = Convert.ToInt32(row["idLehrveranstaltung"]);
                 idCurrLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
                 currStudentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
+                currDocTable = dc.GetDocent(idGroup, idLecture);
             }
         }
 
@@ -245,7 +248,8 @@ namespace de.thm.fsi.atp
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
                         // Check for match
-                        if (CheckStudentCard(dataReceive.ToString()) == true)
+                        if ((checkForStudents == false && CheckDocentCard(dataReceive.ToString()) == true) ||
+                            (checkForStudents == true && CheckStudentCard(dataReceive.ToString()) == true))
                         {
                             // Send back back to reader: NO additional buzzer, green light
                             streamOut.Write(data_green, 0, data_green.Length);
@@ -287,6 +291,25 @@ namespace de.thm.fsi.atp
                 {
                     Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
                     dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
+                    return true;
+                }
+            }
+            Write("❌ Abgelehnt!");
+            return false;
+        }
+
+        /// <summary>
+        /// This checks if there is a match of scanned card UID in docent of lecture.
+        /// Additionally there is an output for the demo purposes.
+        /// </summary>
+        /// <returns>Bool</returns>
+        private bool CheckDocentCard(string dataReceive)
+        {
+            foreach (DataRow row in currDocTable.Rows)
+            {
+                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                {
+                    Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " +row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     return true;
                 }
             }
