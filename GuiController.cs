@@ -18,9 +18,9 @@ namespace de.thm.fsi.atp
         private static ListBox listBox;
         private static AtpBl atpBl;
 
-        public GuiController(AtpBl cAtpBl)
+        public GuiController(AtpBl iAtpBl)
         {
-            atpBl = cAtpBl;
+            atpBl = iAtpBl;
             frm1 = new Form1();
             dataGridView = frm1.dataGridView2;
             listBox = frm1.listBox1;
@@ -68,8 +68,10 @@ namespace de.thm.fsi.atp
         public void UpdateDgv(DataTable iGridTable)
         {
             gridTable = iGridTable;
-            BindingSource bSource = new BindingSource();
-            bSource.DataSource = gridTable;
+            BindingSource bSource = new BindingSource
+            {
+                DataSource = gridTable
+            };
             dataGridView.DataSource = bSource;
             dataGridView.Columns["idStudent"].Visible = false;
             dataGridView.Columns["Studierende"].ReadOnly = true; // editing globally enabled in dgv properties
@@ -80,8 +82,10 @@ namespace de.thm.fsi.atp
         /// </summary>
         public static void NoUpdateCell()
         {
-            BindingSource bSource = new BindingSource();
-            bSource.DataSource = gridTable;
+            BindingSource bSource = new BindingSource
+            {
+                DataSource = gridTable
+            };
             dataGridView.DataSource = bSource;
             dataGridView.Columns["idStudent"].Visible = false;
             dataGridView.Columns["Studierende"].ReadOnly = true; // editing globally enabled in dgv properties
@@ -95,7 +99,7 @@ namespace de.thm.fsi.atp
         /// <param name="nameLecture">Lehrveranstaltung</param>
         public void SetTitle(string nameSpecialty, string nameCourse, string nameLecture)
         {
-            if (String.IsNullOrEmpty(nameSpecialty))
+            if (string.IsNullOrEmpty(nameSpecialty))
             {
                 frm1.label2.Text = nameCourse + " – " + nameLecture;
             }
@@ -119,7 +123,7 @@ namespace de.thm.fsi.atp
                 if (e.ColumnIndex > 1)
                 {
                     string strValue = dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    if (String.IsNullOrEmpty(strValue))
+                    if (string.IsNullOrEmpty(strValue))
                     {
                         strValue = "False";
                     }
@@ -148,7 +152,7 @@ namespace de.thm.fsi.atp
         /// <param name="e">Selection Data</param>
         public static void DropdownSelect(object sender, EventArgs e)
         {
-            Object selectedItem = frm1.comboBox1.SelectedItem;
+            object selectedItem = frm1.comboBox1.SelectedItem;
             atpBl.SetLecture(frm1.comboBox1.SelectedIndex);
         }
     }

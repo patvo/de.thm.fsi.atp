@@ -19,11 +19,11 @@ namespace de.thm.fsi.atp
         // For demo purposes some attributes are hard coded!
         ////////
         // Attributes for TCP/IP connection to RFID reader:
-        private static IPAddress localAddr = IPAddress.Parse("192.168.178.101");
-        private static Int32 portPc = 8890;
+        private static readonly IPAddress localAddr = IPAddress.Parse("192.168.178.101");
+        private static readonly int portPc = 8890;
         private static IPAddress readerAddr;
-        private static Int32 portReader = 10001;
-        private static String dataReceive = null;
+        private static readonly int portReader = 10001;
+        private static string dataReceive = null;
         // Attributes for matching datagrid output:
         private static DataController dc;
         private static int idLecture;
@@ -40,14 +40,14 @@ namespace de.thm.fsi.atp
         // Attributes for user interface:
         private static GuiController gc;
 
-        public AtpBl(String cReaderAddr)
+        public AtpBl(string iReaderAddr)
         {
-            readerAddr = IPAddress.Parse(cReaderAddr);
+            readerAddr = IPAddress.Parse(iReaderAddr);
 
             dc = new DataController();
             gc = new GuiController(this);
 
-            // Start own thread for TCP/IP listener loop
+            // Start own thread for TCP/IP listening loop
             Thread t = new Thread(() => StartReaderConnection());
             t.Start();
 
@@ -73,10 +73,12 @@ namespace de.thm.fsi.atp
             currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
         }
 
+        /// <summary>
+        /// This sets attributes for matching algorithem and gets a list of all students of the current lecture.
+        /// </summary>
         private void PrepareMatching()
         {
             FindCurrentLecture();
-
             foreach (DataRow row in currLectTable.Rows)
             {
                 int idGroup = Convert.ToInt32(row["idStudiengruppe"]);
@@ -116,11 +118,13 @@ namespace de.thm.fsi.atp
                     strDate = date.ToString("dd/MM/yyyy") + " (" + i.ToString() + ")";
                 }
 
-                DataColumn column = new DataColumn();
-                column.DataType = Type.GetType("System.Boolean");
-                column.Caption = row["idLehrveranstaltungstermin"].ToString();
-                column.ColumnName = strDate;
-                column.ReadOnly = false;
+                DataColumn column = new DataColumn
+                {
+                    DataType = Type.GetType("System.Boolean"),
+                    Caption = row["idLehrveranstaltungstermin"].ToString(),
+                    ColumnName = strDate,
+                    ReadOnly = false
+                };
                 gridTable.Columns.Add(column);
             }
 
@@ -170,7 +174,6 @@ namespace de.thm.fsi.atp
             gc.UpdateDgv(gridTable);
         }
 
-
         /// <summary>
         /// Sets class attributes according to dropdown list selection.
         /// Initiates DataGrid fill.
@@ -218,7 +221,7 @@ namespace de.thm.fsi.atp
                 server = new TcpListener(localAddr, portPc);
                 server.Start();
                 clientOut = new TcpClient(readerAddr.ToString(), portReader);
-                Byte[] bytes = new Byte[256]; // 256 byte buffer for reading data
+                byte[] bytes = new byte[256]; // 256 byte buffer for reading data
 
                 // Enter listening loop
                 while (true)
@@ -226,8 +229,8 @@ namespace de.thm.fsi.atp
                     TcpClient clientIn = server.AcceptTcpClient();
                     dataReceive = null;
                     // ASCII encoding for reader communication
-                    Byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
-                    Byte[] data_red = System.Text.Encoding.ASCII.GetBytes("000010100101"); // additional buzzer, red light
+                    byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
+                    byte[] data_red = System.Text.Encoding.ASCII.GetBytes("000010100101"); // additional buzzer, red light
 
                     // Stream objects for reading and writing
                     NetworkStream streamIn = clientIn.GetStream();
@@ -244,12 +247,12 @@ namespace de.thm.fsi.atp
                         // Check for match
                         if (CheckStudentCard(dataReceive.ToString()) == true)
                         {
-                            // Send back positive response
+                            // Send back back to reader: NO additional buzzer, green light
                             streamOut.Write(data_green, 0, data_green.Length);
                         }
                         else
                         {
-                            // Send back a negative response
+                            // Send back a to reader: additional buzzer, red light
                             streamOut.Write(data_red, 0, data_red.Length);
                         }
                     }
@@ -280,7 +283,7 @@ namespace de.thm.fsi.atp
         {
             foreach (DataRow row in currStudentTable.Rows)
             {
-                if (String.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
                     Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
                     dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
