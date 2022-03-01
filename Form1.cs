@@ -25,5 +25,9 @@ namespace de.thm.fsi.atp
             GuiController.DropdownSelect(sender, e);
         }
 
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            GuiController.Refresh();
+        }
     }
 }

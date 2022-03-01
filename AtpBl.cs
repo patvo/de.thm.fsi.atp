@@ -247,16 +247,17 @@ namespace de.thm.fsi.atp
                         dataReceive = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
+                        checkForStudents = true; ///// TODO
                         // Check for match
                         if ((checkForStudents == false && CheckDocentCard(dataReceive.ToString()) == true) ||
                             (checkForStudents == true && CheckStudentCard(dataReceive.ToString()) == true))
                         {
-                            // Send back back to reader: NO additional buzzer, green light
+                            // Send back to reader: NO additional buzzer, green light
                             streamOut.Write(data_green, 0, data_green.Length);
                         }
                         else
                         {
-                            // Send back a to reader: additional buzzer, red light
+                            // Send back to reader: additional buzzer, red light
                             streamOut.Write(data_red, 0, data_red.Length);
                         }
                     }
@@ -289,7 +290,7 @@ namespace de.thm.fsi.atp
             {
                 if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
-                    Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
+                    Write("✔ " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
                     return true;
                 }
@@ -309,7 +310,7 @@ namespace de.thm.fsi.atp
             {
                 if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
-                    Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " +row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
+                    Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     return true;
                 }
             }
@@ -346,5 +347,13 @@ namespace de.thm.fsi.atp
 
         }
 
+        /// <summary>
+        /// This refreshs datagrid table.
+        /// Only used in demo.
+        /// </summary>
+        public void RefreshGrid()
+        {
+            FillDataGridTable();
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace de.thm.fsi.atp
             StartBl("192.168.178.144");
 
             Application.EnableVisualStyles();
+            //Application.Run();
             Application.Run();
         }
 

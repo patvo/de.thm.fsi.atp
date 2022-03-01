@@ -11,7 +11,6 @@ namespace de.thm.fsi.atp
     /// </summary>
     internal class GuiController
     {
-
         private static Form1 frm1;
         private static DataGridView dataGridView;
         private static DataTable gridTable;
@@ -32,6 +31,14 @@ namespace de.thm.fsi.atp
         public void StartGui()
         {
             frm1.ShowDialog();
+        }
+
+        /// <summary>
+        /// This refreshs the data grid view.
+        /// </summary>
+        public static void Refresh()
+        {
+            atpBl.RefreshGrid();
         }
 
         /// <summary>
