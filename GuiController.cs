@@ -47,18 +47,21 @@ namespace de.thm.fsi.atp
         public static void Analyze()
         {
             DataTable dt = atpBl.FindAbsentees();
-            if(dt.Rows.Count == 0)
+            if(dt != null)
             {
-                MessageBox.Show("Keine Abwesenheiten gefunden.", "Abwesenheit");
-            } 
-            else
-            {
-                System.Text.StringBuilder b = new System.Text.StringBuilder();
-                foreach (DataRow dr in dt.Rows)
+                if (dt.Rows.Count == 0)
                 {
-                    b.Append(dr["strAbs"].ToString() + "\n");
+                    MessageBox.Show("Keine Abwesenheiten gefunden.", "Abwesenheit");
                 }
-                MessageBox.Show(b.ToString(), "Abwesenheit");
+                else
+                {
+                    System.Text.StringBuilder b = new System.Text.StringBuilder();
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        b.Append(dr["strAbs"].ToString() + "\n");
+                    }
+                    MessageBox.Show(b.ToString(), "Abwesenheit");
+                }
             }
         }
 

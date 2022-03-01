@@ -185,24 +185,27 @@ namespace de.thm.fsi.atp
         {
             DataTable absentTable = new DataTable();
             absentTable.Columns.Add("strAbs", typeof(string));
-            if (gridTable.Rows.Count != 0)
+            if (gridTable != null)
             {
-                int idxRow = 0;
-                foreach (DataRow row in gridTable.Rows)
+                if (gridTable.Rows.Count != 0)
                 {
-                    int idxCln = 0;
-                    foreach (DataColumn column in gridTable.Columns)
+                    int idxRow = 0;
+                    foreach (DataRow row in gridTable.Rows)
                     {
-                        Object cellValue = gridTable.Rows[idxRow][idxCln];
-                        if (cellValue is System.DBNull)
+                        int idxCln = 0;
+                        foreach (DataColumn column in gridTable.Columns)
                         {
-                            absentTable.Rows.Add(row["Studierende"].ToString() + " war abwesend am: " + column.ColumnName.ToString());
+                            object cellValue = gridTable.Rows[idxRow][idxCln];
+                            if (cellValue is System.DBNull)
+                            {
+                                absentTable.Rows.Add(row["Studierende"].ToString() + " war abwesend am: " + column.ColumnName.ToString());
+                            }
+                            idxCln++;
                         }
-                        idxCln++;
+                        idxRow++;
                     }
-                    idxRow++;
+                    return absentTable;
                 }
-                return absentTable;
             }
             return null;
         }
@@ -370,7 +373,7 @@ namespace de.thm.fsi.atp
                 Write("Lesegerät mit IP " + readerAddr.ToString() + " in " + row["bezeichnung"].ToString() + ".");
             }
 
-            if(currLectTable.Rows.Count == 0)
+            if (currLectTable.Rows.Count == 0)
             {
                 Write("Aktuell findet keine Veranstaltung statt.");
             }
@@ -389,7 +392,10 @@ namespace de.thm.fsi.atp
         /// </summary>
         public void RefreshGrid()
         {
-            FillDataGridTable();
+            if(gridTable != null)
+            {
+                FillDataGridTable();
+            }
         }
     }
 }
