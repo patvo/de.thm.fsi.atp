@@ -392,7 +392,7 @@ namespace de.thm.fsi.atp
         /// </summary>
         public void RefreshGrid()
         {
-            if(gridTable != null)
+            if (gridTable != null)
             {
                 FillDataGridTable();
             }
