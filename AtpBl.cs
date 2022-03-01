@@ -141,7 +141,7 @@ namespace de.thm.fsi.atp
             foreach (DataRow row in studentTable.Rows)
             {
                 int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
-                studTable.Rows.Add(matrikelnummer, row["nachname"].ToString() + ", " + row["vorname"].ToString() + "\n" + matrikelnummer.ToString());
+                studTable.Rows.Add(matrikelnummer, row["nachname"].ToString() + ", " + row["vorname"].ToString() + " \n" + matrikelnummer.ToString());
             }
 
             // Get all attendances for one lecture
@@ -178,6 +178,36 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
+        /// This finds absentees of a selected lecture.
+        /// </summary>
+        /// <returns>Table of strings of abstentees + date</returns>
+        public DataTable FindAbsentees()
+        {
+            DataTable absentTable = new DataTable();
+            absentTable.Columns.Add("strAbs", typeof(string));
+            if (gridTable.Rows.Count != 0)
+            {
+                int idxRow = 0;
+                foreach (DataRow row in gridTable.Rows)
+                {
+                    int idxCln = 0;
+                    foreach (DataColumn column in gridTable.Columns)
+                    {
+                        Object cellValue = gridTable.Rows[idxRow][idxCln];
+                        if (cellValue is System.DBNull)
+                        {
+                            absentTable.Rows.Add(row["Studierende"].ToString() + " war abwesend am: " + column.ColumnName.ToString());
+                        }
+                        idxCln++;
+                    }
+                    idxRow++;
+                }
+                return absentTable;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Sets class attributes according to dropdown list selection.
         /// Initiates DataGrid fill.
         /// </summary>
@@ -201,7 +231,7 @@ namespace de.thm.fsi.atp
 
             if (value == true)
             {
-                gridTable.Rows[rowIdx][columnIdx] = false;
+                gridTable.Rows[rowIdx][columnIdx] = System.DBNull.Value;
                 dc.DeleteAttendance(idStudent, idLectureDate);
             }
             else
@@ -340,11 +370,17 @@ namespace de.thm.fsi.atp
                 Write("Lesegerät mit IP " + readerAddr.ToString() + " in " + row["bezeichnung"].ToString() + ".");
             }
 
-            foreach (DataRow row in currLectTable.Rows)
+            if(currLectTable.Rows.Count == 0)
             {
-                Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
+                Write("Aktuell findet keine Veranstaltung statt.");
             }
-
+            else
+            {
+                foreach (DataRow row in currLectTable.Rows)
+                {
+                    Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
+                }
+            }
         }
 
         /// <summary>

@@ -29,5 +29,10 @@ namespace de.thm.fsi.atp
         {
             GuiController.Refresh();
         }
+
+        private void btnAnalyze_Click(object sender, EventArgs e)
+        {
+            GuiController.Analyze();
+        }
     }
 }

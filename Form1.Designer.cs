@@ -138,6 +138,7 @@ namespace de.thm.fsi.atp
             this.btnAnalyze.TabIndex = 18;
             this.btnAnalyze.Text = "Auswertung erstellen";
             this.btnAnalyze.UseVisualStyleBackColor = true;
+            this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
             // 
             // Form1
             // 
