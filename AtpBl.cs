@@ -19,12 +19,13 @@ namespace de.thm.fsi.atp
         // For demo purposes some attributes are hard coded!
         ////////
         // Attributes for TCP/IP connection to RFID reader:
-        private static IPAddress localAddr = IPAddress.Parse("192.168.178.101");
-        private static Int32 portPc = 8890;
+        private static readonly IPAddress localAddr = IPAddress.Parse("192.168.178.101");
+        private static readonly int portPc = 8890;
         private static IPAddress readerAddr;
-        private static Int32 portReader = 10001;
-        private static String dataReceive = null;
+        private static readonly int portReader = 10001;
+        private static string dataReceive = null;
         // Attributes for matching datagrid output:
+        private static bool checkForStudents = false;
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
@@ -37,17 +38,18 @@ namespace de.thm.fsi.atp
         private static DataTable gridTable;
         private static DataTable currStudentTable;
         private static DataTable currLectTable;
+        private static DataTable currDocTable;
         // Attributes for user interface:
         private static GuiController gc;
 
-        public AtpBl(String cReaderAddr)
+        public AtpBl(string iReaderAddr)
         {
-            readerAddr = IPAddress.Parse(cReaderAddr);
+            readerAddr = IPAddress.Parse(iReaderAddr);
 
             dc = new DataController();
             gc = new GuiController(this);
 
-            // Start own thread for TCP/IP listener loop
+            // Start own thread for TCP/IP listening loop
             Thread t = new Thread(() => StartReaderConnection());
             t.Start();
 
@@ -73,16 +75,19 @@ namespace de.thm.fsi.atp
             currLectTable = dc.GetCurrLectForRoom(readerAddr.ToString(), strDate, strTime);
         }
 
+        /// <summary>
+        /// This sets attributes for matching algorithem and gets a list of all students of the current lecture.
+        /// </summary>
         private void PrepareMatching()
         {
             FindCurrentLecture();
-
             foreach (DataRow row in currLectTable.Rows)
             {
                 int idGroup = Convert.ToInt32(row["idStudiengruppe"]);
                 int idLecture = Convert.ToInt32(row["idLehrveranstaltung"]);
                 idCurrLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
                 currStudentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
+                currDocTable = dc.GetDocent(idGroup, idLecture);
             }
         }
 
@@ -116,11 +121,13 @@ namespace de.thm.fsi.atp
                     strDate = date.ToString("dd/MM/yyyy") + " (" + i.ToString() + ")";
                 }
 
-                DataColumn column = new DataColumn();
-                column.DataType = Type.GetType("System.Boolean");
-                column.Caption = row["idLehrveranstaltungstermin"].ToString();
-                column.ColumnName = strDate;
-                column.ReadOnly = false;
+                DataColumn column = new DataColumn
+                {
+                    DataType = Type.GetType("System.Boolean"),
+                    Caption = row["idLehrveranstaltungstermin"].ToString(),
+                    ColumnName = strDate,
+                    ReadOnly = false
+                };
                 gridTable.Columns.Add(column);
             }
 
@@ -134,7 +141,7 @@ namespace de.thm.fsi.atp
             foreach (DataRow row in studentTable.Rows)
             {
                 int matrikelnummer = int.Parse(row["matrikelnummer"].ToString());
-                studTable.Rows.Add(matrikelnummer, row["nachname"].ToString() + ", " + row["vorname"].ToString() + "\n" + matrikelnummer.ToString());
+                studTable.Rows.Add(matrikelnummer, row["nachname"].ToString() + ", " + row["vorname"].ToString() + " \n" + matrikelnummer.ToString());
             }
 
             // Get all attendances for one lecture
@@ -170,6 +177,38 @@ namespace de.thm.fsi.atp
             gc.UpdateDgv(gridTable);
         }
 
+        /// <summary>
+        /// This finds absentees of a selected lecture.
+        /// </summary>
+        /// <returns>Table of strings of abstentees + date</returns>
+        public DataTable FindAbsentees()
+        {
+            DataTable absentTable = new DataTable();
+            absentTable.Columns.Add("strAbs", typeof(string));
+            if (gridTable != null)
+            {
+                if (gridTable.Rows.Count != 0)
+                {
+                    int idxRow = 0;
+                    foreach (DataRow row in gridTable.Rows)
+                    {
+                        int idxCln = 0;
+                        foreach (DataColumn column in gridTable.Columns)
+                        {
+                            object cellValue = gridTable.Rows[idxRow][idxCln];
+                            if (cellValue is System.DBNull)
+                            {
+                                absentTable.Rows.Add(row["Studierende"].ToString() + " war abwesend am: " + column.ColumnName.ToString());
+                            }
+                            idxCln++;
+                        }
+                        idxRow++;
+                    }
+                    return absentTable;
+                }
+            }
+            return null;
+        }
 
         /// <summary>
         /// Sets class attributes according to dropdown list selection.
@@ -195,7 +234,7 @@ namespace de.thm.fsi.atp
 
             if (value == true)
             {
-                gridTable.Rows[rowIdx][columnIdx] = false;
+                gridTable.Rows[rowIdx][columnIdx] = System.DBNull.Value;
                 dc.DeleteAttendance(idStudent, idLectureDate);
             }
             else
@@ -218,7 +257,7 @@ namespace de.thm.fsi.atp
                 server = new TcpListener(localAddr, portPc);
                 server.Start();
                 clientOut = new TcpClient(readerAddr.ToString(), portReader);
-                Byte[] bytes = new Byte[256]; // 256 byte buffer for reading data
+                byte[] bytes = new byte[256]; // 256 byte buffer for reading data
 
                 // Enter listening loop
                 while (true)
@@ -226,8 +265,8 @@ namespace de.thm.fsi.atp
                     TcpClient clientIn = server.AcceptTcpClient();
                     dataReceive = null;
                     // ASCII encoding for reader communication
-                    Byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
-                    Byte[] data_red = System.Text.Encoding.ASCII.GetBytes("000010100101"); // additional buzzer, red light
+                    byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
+                    byte[] data_red = System.Text.Encoding.ASCII.GetBytes("000010100101"); // additional buzzer, red light
 
                     // Stream objects for reading and writing
                     NetworkStream streamIn = clientIn.GetStream();
@@ -242,14 +281,15 @@ namespace de.thm.fsi.atp
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
                         // Check for match
-                        if (CheckStudentCard(dataReceive.ToString()) == true)
+                        if ((checkForStudents == false && CheckDocentCard(dataReceive.ToString()) == true) ||
+                            (checkForStudents == true && CheckStudentCard(dataReceive.ToString()) == true))
                         {
-                            // Send back positive response
+                            // Send back to reader: NO additional buzzer, green light
                             streamOut.Write(data_green, 0, data_green.Length);
                         }
                         else
                         {
-                            // Send back a negative response
+                            // Send back to reader: additional buzzer, red light
                             streamOut.Write(data_red, 0, data_red.Length);
                         }
                     }
@@ -280,10 +320,30 @@ namespace de.thm.fsi.atp
         {
             foreach (DataRow row in currStudentTable.Rows)
             {
-                if (String.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
-                    Write("✔ Matrikelnummer " + row["matrikelnummer"].ToString() + " akzeptiert!");
+                    Write("✔ " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
+                    return true;
+                }
+            }
+            Write("❌ Abgelehnt!");
+            return false;
+        }
+
+        /// <summary>
+        /// This checks if there is a match of scanned card UID in docent of lecture.
+        /// Additionally there is an output for the demo purposes.
+        /// </summary>
+        /// <returns>Bool</returns>
+        private bool CheckDocentCard(string dataReceive)
+        {
+            foreach (DataRow row in currDocTable.Rows)
+            {
+                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                {
+                    checkForStudents = true; // after docent card is recognized student cards are getting scanned
+                    Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     return true;
                 }
             }
@@ -313,12 +373,29 @@ namespace de.thm.fsi.atp
                 Write("Lesegerät mit IP " + readerAddr.ToString() + " in " + row["bezeichnung"].ToString() + ".");
             }
 
-            foreach (DataRow row in currLectTable.Rows)
+            if (currLectTable.Rows.Count == 0)
             {
-                Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
+                Write("Aktuell findet keine Veranstaltung statt.");
             }
-
+            else
+            {
+                foreach (DataRow row in currLectTable.Rows)
+                {
+                    Write("Aktuelle Lehrveranstaltung: " + row["bezeichnung"].ToString() + " (" + row["zeitVon"].ToString() + " - " + row["zeitBis"].ToString() + ")");
+                }
+            }
         }
 
+        /// <summary>
+        /// This refreshs datagrid table.
+        /// Only used in demo.
+        /// </summary>
+        public void RefreshGrid()
+        {
+            if(gridTable != null)
+            {
+                FillDataGridTable();
+            }
+        }
     }
 }

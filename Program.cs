@@ -11,7 +11,7 @@ namespace de.thm.fsi.atp
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Thread mainThread = Thread.CurrentThread;
 
@@ -24,6 +24,7 @@ namespace de.thm.fsi.atp
             StartBl("192.168.178.144");
 
             Application.EnableVisualStyles();
+            //Application.Run();
             Application.Run();
         }
 

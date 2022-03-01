@@ -37,9 +37,10 @@ namespace de.thm.fsi.atp
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnRefresh = new System.Windows.Forms.Button();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.tableBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.btnAnalyze = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tableBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -100,18 +101,19 @@ namespace de.thm.fsi.atp
             this.dataGridView2.TabIndex = 2;
             this.dataGridView2.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView2_CellClick);
             // 
-            // button1
+            // btnRefresh
             // 
-            this.button1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.button1.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(1561, 758);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(185, 37);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Auswertung erstellen";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Default;
+            this.btnRefresh.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefresh.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefresh.Location = new System.Drawing.Point(1561, 758);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(185, 37);
+            this.btnRefresh.TabIndex = 3;
+            this.btnRefresh.Text = "Aktualisieren";
+            this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
             // listBox1
             // 
@@ -124,6 +126,20 @@ namespace de.thm.fsi.atp
             this.listBox1.Size = new System.Drawing.Size(1239, 191);
             this.listBox1.TabIndex = 4;
             // 
+            // btnAnalyze
+            // 
+            this.btnAnalyze.Cursor = System.Windows.Forms.Cursors.Default;
+            this.btnAnalyze.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.btnAnalyze.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAnalyze.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAnalyze.Location = new System.Drawing.Point(1561, 815);
+            this.btnAnalyze.Name = "btnAnalyze";
+            this.btnAnalyze.Size = new System.Drawing.Size(185, 37);
+            this.btnAnalyze.TabIndex = 18;
+            this.btnAnalyze.Text = "Auswertung erstellen";
+            this.btnAnalyze.UseVisualStyleBackColor = true;
+            this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
+            // 
             // Form1
             // 
             this.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
@@ -132,10 +148,11 @@ namespace de.thm.fsi.atp
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImage = global::de.thm.fsi.atp.Properties.Resources.OsPlusBG1;
             this.ClientSize = new System.Drawing.Size(1780, 957);
+            this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.dataGridView2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.listBox1);
             this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
@@ -156,9 +173,10 @@ namespace de.thm.fsi.atp
         public System.Windows.Forms.Label label2;
         public System.Windows.Forms.ComboBox comboBox1;
         public System.Windows.Forms.DataGridView dataGridView2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnRefresh;
         public System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.BindingSource tableBindingSource;
+        private System.Windows.Forms.Button btnAnalyze;
     }
 }
 
