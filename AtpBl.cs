@@ -247,7 +247,6 @@ namespace de.thm.fsi.atp
                         dataReceive = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
-                        checkForStudents = true; ///// TODO
                         // Check for match
                         if ((checkForStudents == false && CheckDocentCard(dataReceive.ToString()) == true) ||
                             (checkForStudents == true && CheckStudentCard(dataReceive.ToString()) == true))
@@ -310,6 +309,7 @@ namespace de.thm.fsi.atp
             {
                 if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                 {
+                    checkForStudents = true; // after docent card is recognized student cards are getting scanned
                     Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
                     return true;
                 }
