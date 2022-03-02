@@ -47,8 +47,6 @@ namespace de.thm.fsi.atp
         public static void Analyze()
         {
             DataTable dt = atpBl.FindAbsentees();
-            if (dt != null)
-            {
                 if (dt.Rows.Count == 0)
                 {
                     MessageBox.Show("Keine Abwesenheiten gefunden.", "Abwesenheit");
@@ -62,7 +60,6 @@ namespace de.thm.fsi.atp
                     }
                     MessageBox.Show(b.ToString(), "Abwesenheit");
                 }
-            }
         }
 
         /// <summary>
@@ -185,6 +182,14 @@ namespace de.thm.fsi.atp
         {
             object selectedItem = frm1.comboBoxLecture.SelectedItem;
             atpBl.SetLecture(frm1.comboBoxLecture.SelectedIndex);
+        }
+
+        /// <summary>
+        /// This initiates controlled closing of application.
+        /// </summary>
+        public static void CloseApplication()
+        {
+            atpBl.Shutdown();
         }
     }
 }

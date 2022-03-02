@@ -165,6 +165,7 @@ namespace de.thm.fsi.atp
             ((System.ComponentModel.ISupportInitialize)(this.tableBindingAttendance)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 
         }
 

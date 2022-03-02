@@ -161,6 +161,14 @@ namespace de.thm.fsi.atp
             connection.Close();
             return dtReader;
         }
+
+        /// <summary>
+        /// This closes connection to database.
+        /// </summary>
+        public void CloseConnection()
+        {
+            connection.Close();
+        }
     }
 
 }
