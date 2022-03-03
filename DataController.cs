@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using MySql.Data.MySqlClient;
 
 namespace de.thm.fsi.atp
@@ -17,16 +18,25 @@ namespace de.thm.fsi.atp
         public DataController()
         {
             connection = new MySqlConnection(dbConnectionString);
-            connection.Open();
+            try
+            {
+                connection.Open();
+            }
+            catch (AggregateException ex)
+            {
+                Console.WriteLine("### AggregateException: " + ex.ToString());
+                System.Environment.Exit(0);
+            }
             dataAdapter = new MySqlDataAdapter();
         }
+
         /// <summary>
         /// This returns the currently ongoing lecture for a room.
         /// </summary>
         /// <param name="ip">Ip address of RFID reader.</param>
-        /// <param name="date"></param>
-        /// <param name="time"></param>
-        /// <returns></returns>
+        /// <param name="date">Date</param>
+        /// <param name="time">Time</param>
+        /// <returns>Query result DataTable</returns>
         public DataTable GetCurrLectForRoom(string ip, string date, string time)
         {
             DataTable dtLect = new DataTable();
@@ -36,6 +46,12 @@ namespace de.thm.fsi.atp
             return dtLect;
         }
 
+        /// <summary>
+        /// This returns the docents of a lecture of a group.
+        /// </summary>
+        /// <param name="idGroup">idStudiengruppe</param>
+        /// <param name="idLecture">idLehrveranstaltung</param>
+        /// <returns>Query result DataTable</returns>
         public DataTable GetDocent(int idGroup, int idLecture)
         {
             DataTable dtDocent = new DataTable();
@@ -50,7 +66,7 @@ namespace de.thm.fsi.atp
         /// This returns the room for a RFID readers IP address.
         /// </summary>
         /// <param name="ip">IP address</param>
-        /// <returns></returns>
+        /// <returns>Query result DataTable</returns>
         public DataTable GetRoom(string ip)
         {
             DataTable dtRoom = new DataTable();
@@ -69,7 +85,7 @@ namespace de.thm.fsi.atp
         public DataTable GetDiffDatesPerLecture(int idGroup, int idLecture)
         {
             DataTable dtDates = new DataTable();
-            string sqlDates = "Select Distinct lehrveranstaltungstermin.datum, lehrveranstaltungstermin.idLehrveranstaltungstermin From lehrveranstaltung Inner Join lehrveranstaltungstermin On lehrveranstaltungstermin.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join studiengruppe_has_lehrveranstaltung On studiengruppe_has_lehrveranstaltung.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join studiengruppe On studiengruppe_has_lehrveranstaltung.idStudiengruppe = studiengruppe.idStudiengruppe Where lehrveranstaltungstermin.idLehrveranstaltung = " + idLecture + " And lehrveranstaltungstermin.idStudiengruppe = " + idGroup + " Order By lehrveranstaltungstermin.datum";
+            string sqlDates = "Select Distinct lehrveranstaltungstermin.datum, lehrveranstaltungstermin.idLehrveranstaltungstermin From lehrveranstaltung Inner Join lehrveranstaltungstermin On lehrveranstaltungstermin.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join studiengruppe_has_lehrveranstaltung On studiengruppe_has_lehrveranstaltung.idLehrveranstaltung = lehrveranstaltung.idLehrveranstaltung Inner Join studiengruppe On studiengruppe_has_lehrveranstaltung.idStudiengruppe = studiengruppe.idStudiengruppe Where lehrveranstaltungstermin.idLehrveranstaltung = " + idLecture + " And lehrveranstaltungstermin.idStudiengruppe = " + idGroup + " Order By lehrveranstaltungstermin.datum, lehrveranstaltungstermin.zeitVon";
             dataAdapter.SelectCommand = new MySqlCommand(sqlDates, connection);
             dataAdapter.Fill(dtDates);
             return dtDates;

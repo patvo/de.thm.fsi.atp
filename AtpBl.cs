@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -28,7 +27,7 @@ namespace de.thm.fsi.atp
         private static TcpListener server;
         private static TcpClient clientOut;
         private static TcpClient clientIn;
-        // Attributes for matching datagrid output:
+        // Attributes for matching and datagrid output:
         private static bool checkForStudents = false;
         private static DataController dc;
         private static int idLecture;
@@ -254,8 +253,6 @@ namespace de.thm.fsi.atp
         /// </summary>
         private void StartReaderConnection()
         {
-            //TcpListener server = null;
-            //TcpClient clientOut = null;
             try
             {
                 server = new TcpListener(localAddr, portPc);
@@ -266,7 +263,6 @@ namespace de.thm.fsi.atp
                 // Enter listening loop
                 while (true)
                 {
-                    //TcpClient clientIn = server.AcceptTcpClient();
                     clientIn = server.AcceptTcpClient();
                     dataReceive = null;
                     // ASCII encoding for reader communication
@@ -306,7 +302,7 @@ namespace de.thm.fsi.atp
             }
             catch (SocketException e)
             {
-                Write("SocketException: " + e.ToString());
+                Write("### SocketException: " + e.ToString());
             }
             finally
             {
@@ -417,8 +413,14 @@ namespace de.thm.fsi.atp
             {
                 clientIn.Close();
             }
-            clientOut.Close();
-            server.Stop();
+            if (clientOut != null)
+            {
+                clientOut.Close();
+            }
+            if (server != null)
+            {
+                server.Stop();
+            }
             System.Windows.Forms.Application.Exit();
         }
     }
