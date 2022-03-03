@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-
+using System.Timers;
 
 namespace de.thm.fsi.atp
 {
@@ -32,7 +32,8 @@ namespace de.thm.fsi.atp
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
-        private static int idCurrLectureDate;
+        private static int currIdLectureDate;
+        private static int prevIdLectureDate;
         private static string nameLecture;
         private static string nameCourse;
         private static string nameSpecialty;
@@ -42,6 +43,10 @@ namespace de.thm.fsi.atp
         private static DataTable currStudentTable;
         private static DataTable currLectTable;
         private static DataTable currDocTable;
+        private static bool checkForPrevious = false;
+        private static DataTable prevStudentTable;
+        private static DataTable prevLectTable;
+        private static DataTable prevDocTable;
         // Attributes for user interface:
         private static GuiController gc;
 
@@ -60,6 +65,9 @@ namespace de.thm.fsi.atp
             lecturesTable = dc.GetAllLecturesGroups();
             gc.FillComboBox(lecturesTable);
             PrepareMatching();
+            // Start timer thread to check for lecture to be over
+            Thread timerThread = new Thread(() => StartTimerChecker());
+            timerThread.Start();
 
             // For demo output
             WriteRoomAndLecture();
@@ -88,7 +96,7 @@ namespace de.thm.fsi.atp
             {
                 int idGroup = Convert.ToInt32(row["idStudiengruppe"]);
                 int idLecture = Convert.ToInt32(row["idLehrveranstaltung"]);
-                idCurrLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
+                currIdLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
                 currStudentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
                 currDocTable = dc.GetDocent(idGroup, idLecture);
             }
@@ -282,8 +290,7 @@ namespace de.thm.fsi.atp
                         Write("Chipkartennummer: " + dataReceive.ToString());
 
                         // Check for match
-                        if ((checkForStudents == false && CheckDocentCard(dataReceive.ToString()) == true) ||
-                            (checkForStudents == true && CheckStudentCard(dataReceive.ToString()) == true))
+                        if (Matcher(dataReceive.ToString()))
                         {
                             // Send back to reader: NO additional buzzer, green light
                             streamOut.Write(data_green, 0, data_green.Length);
@@ -311,21 +318,29 @@ namespace de.thm.fsi.atp
             }
         }
 
+
+
         /// <summary>
         /// This checks if there is a match of scanned card UID in students of lecture.
         /// If card matches current lecture an attendance insert on the database is performed.
         /// Additionally there is an output for the demo purposes.
         /// </summary>
+        /// <param name="dataReceive">Scanned card UID</param>
+        /// <param name="dataTable">Current or previous student table</param>
+        /// <param name="idLectureDate">Current or previous lecture date id</param>
         /// <returns>Bool</returns>
-        private bool CheckStudentCard(string dataReceive)
+        private bool CheckStudentCard(string dataReceive, DataTable dataTable, int idLectureDate)
         {
-            foreach (DataRow row in currStudentTable.Rows)
+            if (dataTable != null)
             {
-                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                foreach (DataRow row in dataTable.Rows)
                 {
-                    Write("✔ " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
-                    dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idCurrLectureDate);
-                    return true;
+                    if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                    {
+                        Write("✔ " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
+                        dc.InsertAttendance(Convert.ToInt32(row["matrikelnummer"]), idLectureDate);
+                        return true;
+                    }
                 }
             }
             Write("❌ Abgelehnt!");
@@ -336,12 +351,14 @@ namespace de.thm.fsi.atp
         /// This checks if there is a match of scanned card UID in docent of lecture.
         /// Additionally there is an output for the demo purposes.
         /// </summary>
+        /// <param name="dataReceive">Scanned card UID</param>
+        /// <param name="dataTable">Current or previous docent table</param>
         /// <returns>Bool</returns>
-        private bool CheckDocentCard(string dataReceive)
+        private bool CheckDocentCard(string dataReceive, DataTable dataTable)
         {
-            if (currDocTable != null)
+            if (dataTable != null)
             {
-                foreach (DataRow row in currDocTable.Rows)
+                foreach (DataRow row in dataTable.Rows)
                 {
                     if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
                     {
@@ -401,6 +418,95 @@ namespace de.thm.fsi.atp
                 FillDataGridTable();
             }
         }
+
+        /// <summary>
+        /// This checks for a proper match in docent or studend tables depending on the current or previous lecture.
+        /// </summary>
+        /// <param name="dataReceive">Scanned card UID</param>
+        /// <returns>Bool</returns>
+        private bool Matcher(string dataReceive)
+        {
+            // Check for match in previous oder current lecture tables
+            if (checkForPrevious == false)
+            {
+                if ((checkForStudents == false && CheckDocentCard(dataReceive, currDocTable) == true) ||
+                (checkForStudents == true && CheckStudentCard(dataReceive, currStudentTable, currIdLectureDate) == true))
+                {
+                    return true;
+                }
+            }
+            else if (checkForPrevious == true)
+            {
+                if ((checkForStudents == false && CheckDocentCard(dataReceive, prevDocTable) == true) ||
+                (checkForStudents == true && CheckStudentCard(dataReceive, prevStudentTable, prevIdLectureDate) == true))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// This starts a 15 seconds timer to check if a lecture is already over.
+        /// </summary>
+        private void StartTimerChecker()
+        {
+            System.Timers.Timer currLectTimer = new System.Timers.Timer(15 * 1000);
+            currLectTimer.Elapsed += new ElapsedEventHandler(CheckLectureOver);
+            currLectTimer.Start();
+        }
+
+        /// <summary>
+        /// This checks if a current lecture is over.
+        /// If the current lecture is over, it gets the new/ current lecture 
+        /// and saves previous information for later use (within the next 15 minutes time period).
+        /// </summary>
+        /// <param name="source">Object</param>
+        /// <param name="e">Data for elapsed event</param>
+        private void CheckLectureOver(object source, ElapsedEventArgs e)
+        {
+            if (currLectTable.Rows.Count != 0)
+            {
+                foreach (DataRow row in currLectTable.Rows)
+                {
+                    DateTime timeUntil = DateTime.Parse(row["zeitBis"].ToString());
+                    DateTime timeNow = DateTime.Now;
+                    if (timeUntil.Hour == timeNow.Hour && timeUntil.Minute == timeNow.Minute)
+                    {
+                        prevStudentTable = currStudentTable;
+                        prevLectTable = currLectTable;
+                        prevDocTable = currDocTable;
+                        prevIdLectureDate = currIdLectureDate;
+                        checkForPrevious = true;
+                        PrepareMatching();
+                        WriteRoomAndLecture();
+                        StartLectureOver();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// This starts a 15 minutes timer to not check for previous lecture anymore.
+        /// </summary>
+        private void StartLectureOver()
+        {
+            System.Timers.Timer prevLectTimer = new System.Timers.Timer(15 * 60 * 1000);
+            prevLectTimer.Elapsed += new ElapsedEventHandler(NotCheckPrevious);
+            prevLectTimer.Start();
+        }
+
+        /// <summary>
+        /// This resets flags to not check for previous lecture anymore.
+        /// </summary>
+        /// <param name="source">Object</param>
+        /// <param name="e">Data for elapsed event</param>
+        private void NotCheckPrevious(object source, ElapsedEventArgs e)
+        {
+            checkForPrevious = false;
+            checkForStudents = false;
+        }
+
 
         /// <summary>
         /// This closes all TCP/IP and database connections.
