@@ -15,6 +15,11 @@ namespace de.thm.fsi.atp
 
         }
 
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            GuiController.CloseApplication();
+        }
+
         private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             GuiController.ClickOnDataGrid(sender, e);

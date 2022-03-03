@@ -21,8 +21,8 @@ namespace de.thm.fsi.atp
         {
             atpBl = iAtpBl;
             frm1 = new Form1();
-            dataGridView = frm1.dataGridView2;
-            listBox = frm1.listBox1;
+            dataGridView = frm1.dataGridAttendance;
+            listBox = frm1.listBoxdemoOutput;
         }
 
         /// <summary>
@@ -47,21 +47,18 @@ namespace de.thm.fsi.atp
         public static void Analyze()
         {
             DataTable dt = atpBl.FindAbsentees();
-            if(dt != null)
+            if (dt.Rows.Count == 0)
             {
-                if (dt.Rows.Count == 0)
+                MessageBox.Show("Keine Abwesenheiten gefunden.", "Abwesenheit");
+            }
+            else
+            {
+                System.Text.StringBuilder b = new System.Text.StringBuilder();
+                foreach (DataRow dr in dt.Rows)
                 {
-                    MessageBox.Show("Keine Abwesenheiten gefunden.", "Abwesenheit");
+                    b.Append(dr["strAbs"].ToString() + "\n");
                 }
-                else
-                {
-                    System.Text.StringBuilder b = new System.Text.StringBuilder();
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        b.Append(dr["strAbs"].ToString() + "\n");
-                    }
-                    MessageBox.Show(b.ToString(), "Abwesenheit");
-                }
+                MessageBox.Show(b.ToString(), "Abwesenheit");
             }
         }
 
@@ -74,7 +71,7 @@ namespace de.thm.fsi.atp
             {
                 string group = row["nameStudiengruppe"].ToString();
                 string lecture = row["bezeichnung"].ToString();
-                frm1.comboBox1.Items.Add(group + " - " + lecture);
+                frm1.comboBoxLecture.Items.Add(group + " - " + lecture);
             }
         }
 
@@ -132,11 +129,11 @@ namespace de.thm.fsi.atp
         {
             if (string.IsNullOrEmpty(nameSpecialty))
             {
-                frm1.label2.Text = nameCourse + " – " + nameLecture;
+                frm1.lblTitle.Text = nameCourse + " – " + nameLecture;
             }
             else
             {
-                frm1.label2.Text = nameCourse + " – " + nameSpecialty + " – " + nameLecture;
+                frm1.lblTitle.Text = nameCourse + " – " + nameSpecialty + " – " + nameLecture;
             }
         }
 
@@ -183,8 +180,16 @@ namespace de.thm.fsi.atp
         /// <param name="e">Selection Data</param>
         public static void DropdownSelect(object sender, EventArgs e)
         {
-            object selectedItem = frm1.comboBox1.SelectedItem;
-            atpBl.SetLecture(frm1.comboBox1.SelectedIndex);
+            object selectedItem = frm1.comboBoxLecture.SelectedItem;
+            atpBl.SetLecture(frm1.comboBoxLecture.SelectedIndex);
+        }
+
+        /// <summary>
+        /// This initiates controlled closing of application.
+        /// </summary>
+        public static void CloseApplication()
+        {
+            atpBl.Shutdown();
         }
     }
 }

@@ -23,8 +23,11 @@ namespace de.thm.fsi.atp
         private static readonly int portPc = 8890;
         private static IPAddress readerAddr;
         private static readonly int portReader = 10001;
-        private static string dataReceive = null;
-        // Attributes for matching datagrid output:
+        private static string dataReceive;
+        private static TcpListener server;
+        private static TcpClient clientOut;
+        private static TcpClient clientIn;
+        // Attributes for matching and datagrid output:
         private static bool checkForStudents = false;
         private static DataController dc;
         private static int idLecture;
@@ -50,8 +53,8 @@ namespace de.thm.fsi.atp
             gc = new GuiController(this);
 
             // Start own thread for TCP/IP listening loop
-            Thread t = new Thread(() => StartReaderConnection());
-            t.Start();
+            Thread tcpThread = new Thread(() => StartReaderConnection());
+            tcpThread.Start();
 
             // Fill initial view
             lecturesTable = dc.GetAllLecturesGroups();
@@ -207,7 +210,7 @@ namespace de.thm.fsi.atp
                     return absentTable;
                 }
             }
-            return null;
+            return absentTable;
         }
 
         /// <summary>
@@ -250,8 +253,6 @@ namespace de.thm.fsi.atp
         /// </summary>
         private void StartReaderConnection()
         {
-            TcpListener server = null;
-            TcpClient clientOut = null;
             try
             {
                 server = new TcpListener(localAddr, portPc);
@@ -262,7 +263,7 @@ namespace de.thm.fsi.atp
                 // Enter listening loop
                 while (true)
                 {
-                    TcpClient clientIn = server.AcceptTcpClient();
+                    clientIn = server.AcceptTcpClient();
                     dataReceive = null;
                     // ASCII encoding for reader communication
                     byte[] data_green = System.Text.Encoding.ASCII.GetBytes("000000010101"); // NO additional buzzer, green light
@@ -301,7 +302,7 @@ namespace de.thm.fsi.atp
             }
             catch (SocketException e)
             {
-                Write("SocketException: " + e.ToString());
+                Write("### SocketException: " + e.ToString());
             }
             finally
             {
@@ -338,13 +339,16 @@ namespace de.thm.fsi.atp
         /// <returns>Bool</returns>
         private bool CheckDocentCard(string dataReceive)
         {
-            foreach (DataRow row in currDocTable.Rows)
+            if (currDocTable != null)
             {
-                if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                foreach (DataRow row in currDocTable.Rows)
                 {
-                    checkForStudents = true; // after docent card is recognized student cards are getting scanned
-                    Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
-                    return true;
+                    if (string.Compare(row["chipkartennummer"].ToString(), dataReceive, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0)
+                    {
+                        checkForStudents = true; // after docent card is recognized student cards are getting scanned
+                        Write("✔ " + row["anrede"].ToString() + " " + row["titel"].ToString() + " " + row["vorname"].ToString() + " " + row["nachname"].ToString() + " akzeptiert!");
+                        return true;
+                    }
                 }
             }
             Write("❌ Abgelehnt!");
@@ -392,10 +396,32 @@ namespace de.thm.fsi.atp
         /// </summary>
         public void RefreshGrid()
         {
-            if(gridTable != null)
+            if (gridTable != null)
             {
                 FillDataGridTable();
             }
+        }
+
+        /// <summary>
+        /// This closes all TCP/IP and database connections.
+        /// Then exits whole application.
+        /// </summary>
+        public void Shutdown()
+        {
+            dc.CloseConnection();
+            if (clientIn != null)
+            {
+                clientIn.Close();
+            }
+            if (clientOut != null)
+            {
+                clientOut.Close();
+            }
+            if (server != null)
+            {
+                server.Stop();
+            }
+            System.Windows.Forms.Application.Exit();
         }
     }
 }

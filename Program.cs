@@ -24,7 +24,6 @@ namespace de.thm.fsi.atp
             StartBl("192.168.178.144");
 
             Application.EnableVisualStyles();
-            //Application.Run();
             Application.Run();
         }
 
@@ -37,7 +36,7 @@ namespace de.thm.fsi.atp
             {
                 Thread t = new Thread(() => StartBl(row["ipAdresse"].ToString()));
                 t.Start();
-                Thread.Sleep(100); // Needed to ensure no TCP/IP connection attempts at the exact same time
+                Thread.Sleep(100); // Waiting time is needed to ensure no TCP/IP connection attempts are made at the same time
             }
         }
         /// <summary>
