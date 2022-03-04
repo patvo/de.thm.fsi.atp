@@ -70,7 +70,8 @@ namespace de.thm.fsi.atp
             timerThread.Start();
 
             // For demo output
-            WriteRoomAndLecture();
+            WriteRoom();
+            WriteLecture();
 
             gc.StartGui();
         }
@@ -99,6 +100,11 @@ namespace de.thm.fsi.atp
                 currIdLectureDate = Convert.ToInt32(row["idLehrveranstaltungstermin"]);
                 currStudentTable = dc.GetStudentsPerLecture(idGroup, idLecture);
                 currDocTable = dc.GetDocent(idGroup, idLecture);
+                // Save in class attributes for previous lecture
+                prevStudentTable = currStudentTable;
+                prevLectTable = currLectTable;
+                prevDocTable = currDocTable;
+                prevIdLectureDate = currIdLectureDate;
             }
         }
 
@@ -383,17 +389,23 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
-        /// This writes the room, ip and current lecture to listbox.
-        /// For demo purposes.
+        /// This writes IP address and room to listbox.
         /// </summary>
-        private void WriteRoomAndLecture()
+        private void WriteRoom()
         {
             DataTable room = dc.GetRoom(readerAddr.ToString());
             foreach (DataRow row in room.Rows)
             {
                 Write("Lesegerät mit IP " + readerAddr.ToString() + " in " + row["bezeichnung"].ToString() + ".");
             }
+        }
 
+        /// <summary>
+        /// This writes current lecture to listbox.
+        /// For demo purposes.
+        /// </summary>
+        private void WriteLecture()
+        {
             if (currLectTable.Rows.Count == 0)
             {
                 Write("Aktuell findet keine Veranstaltung statt.");
@@ -457,39 +469,28 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
-        /// This checks if a current lecture is over.
-        /// If the current lecture is over, it gets the new/ current lecture 
-        /// and saves previous information for later use (within the next 15 minutes time period).
+        /// This checks if there is a lecture going on.
+        /// If lecture has ended will start a 15 minutes timer to book all scans on previous lecture.
         /// </summary>
         /// <param name="source">Object</param>
         /// <param name="e">Data for elapsed event</param>
         private void CheckLectureOver(object source, ElapsedEventArgs e)
         {
-            if (currLectTable.Rows.Count != 0)
+            PrepareMatching();
+            Write(prevIdLectureDate.ToString());
+            if (currLectTable.Rows.Count == 0 && checkForPrevious == false && prevIdLectureDate > 0)
             {
-                foreach (DataRow row in currLectTable.Rows)
-                {
-                    DateTime timeUntil = DateTime.Parse(row["zeitBis"].ToString());
-                    DateTime timeNow = DateTime.Now;
-                    if (timeUntil.Hour == timeNow.Hour && timeUntil.Minute == timeNow.Minute)
-                    {
-                        prevStudentTable = currStudentTable;
-                        prevLectTable = currLectTable;
-                        prevDocTable = currDocTable;
-                        prevIdLectureDate = currIdLectureDate;
-                        checkForPrevious = true;
-                        PrepareMatching();
-                        WriteRoomAndLecture();
-                        StartLectureOver();
-                    }
-                }
+                checkForPrevious = true;
+                WriteLecture();
+                Thread timerThread = new Thread(() => StartTimerLectureOver());
+                timerThread.Start();
             }
         }
 
         /// <summary>
         /// This starts a 15 minutes timer to not check for previous lecture anymore.
         /// </summary>
-        private void StartLectureOver()
+        private void StartTimerLectureOver()
         {
             System.Timers.Timer prevLectTimer = new System.Timers.Timer(15 * 60 * 1000);
             prevLectTimer.Elapsed += new ElapsedEventHandler(NotCheckPrevious);
@@ -503,6 +504,8 @@ namespace de.thm.fsi.atp
         /// <param name="e">Data for elapsed event</param>
         private void NotCheckPrevious(object source, ElapsedEventArgs e)
         {
+            PrepareMatching();
+            WriteLecture();
             checkForPrevious = false;
             checkForStudents = false;
         }

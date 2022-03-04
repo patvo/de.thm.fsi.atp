@@ -97,7 +97,7 @@ namespace de.thm.fsi.atp
             this.dataGridAttendance.Name = "dataGridAttendance";
             this.dataGridAttendance.RowHeadersVisible = false;
             this.dataGridAttendance.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridAttendance.Size = new System.Drawing.Size(1507, 561);
+            this.dataGridAttendance.Size = new System.Drawing.Size(1609, 561);
             this.dataGridAttendance.TabIndex = 2;
             this.dataGridAttendance.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView2_CellClick);
             // 
@@ -147,7 +147,7 @@ namespace de.thm.fsi.atp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImage = global::de.thm.fsi.atp.Properties.Resources.OsPlusBG;
-            this.ClientSize = new System.Drawing.Size(1780, 957);
+            this.ClientSize = new System.Drawing.Size(1880, 957);
             this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.comboBoxLecture);
@@ -160,12 +160,12 @@ namespace de.thm.fsi.atp
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Attendance+";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridAttendance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tableBindingAttendance)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 
         }
 
