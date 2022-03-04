@@ -3,3 +3,5 @@
 
 # de.thm.fsi.atp
 RFID assisted attendance detection
+
+WARNING: This application demands a working database connection to run!
