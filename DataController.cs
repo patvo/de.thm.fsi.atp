@@ -9,11 +9,11 @@ namespace de.thm.fsi.atp
     /// In this demo case its a MySQL database controller for connection, queries, insertions and deletions.
     /// Connected to a local mysql db.
     /// </summary>
-    internal class DataController
+    internal class DataController : IDisposable
     {
         private static readonly string dbConnectionString = "server=localhost;user id=user;database=atp;port=3306;persistsecurityinfo=True;password=bla123";
-        private readonly MySqlConnection connection;
-        private readonly MySqlDataAdapter dataAdapter;
+        private MySqlConnection connection;
+        private MySqlDataAdapter dataAdapter;
 
         public DataController()
         {
@@ -28,6 +28,15 @@ namespace de.thm.fsi.atp
                 System.Environment.Exit(0);
             }
             dataAdapter = new MySqlDataAdapter();
+        }
+
+        /// <summary>
+        /// This disposes of unmanaged resources of the class.
+        /// </summary>
+        public void Dispose()
+        {
+            if (connection != null) { connection.Dispose(); connection = null; }
+            if (dataAdapter != null) { dataAdapter.Dispose(); dataAdapter = null; }
         }
 
         /// <summary>
