@@ -31,7 +31,7 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
-        /// This disposes of unmanaged resources of the class.
+        /// This disposes unmanaged resources of the class.
         /// </summary>
         public void Dispose()
         {

@@ -107,7 +107,7 @@ namespace de.thm.fsi.atp
             this.btnRefresh.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRefresh.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRefresh.Location = new System.Drawing.Point(1561, 758);
+            this.btnRefresh.Location = new System.Drawing.Point(1673, 758);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(185, 37);
             this.btnRefresh.TabIndex = 3;
@@ -123,7 +123,7 @@ namespace de.thm.fsi.atp
             this.listBoxdemoOutput.ItemHeight = 21;
             this.listBoxdemoOutput.Location = new System.Drawing.Point(286, 758);
             this.listBoxdemoOutput.Name = "listBoxdemoOutput";
-            this.listBoxdemoOutput.Size = new System.Drawing.Size(1239, 191);
+            this.listBoxdemoOutput.Size = new System.Drawing.Size(1342, 191);
             this.listBoxdemoOutput.TabIndex = 4;
             // 
             // btnAnalyze
@@ -132,7 +132,7 @@ namespace de.thm.fsi.atp
             this.btnAnalyze.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.btnAnalyze.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAnalyze.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnalyze.Location = new System.Drawing.Point(1561, 815);
+            this.btnAnalyze.Location = new System.Drawing.Point(1673, 816);
             this.btnAnalyze.Name = "btnAnalyze";
             this.btnAnalyze.Size = new System.Drawing.Size(185, 37);
             this.btnAnalyze.TabIndex = 18;
@@ -147,7 +147,7 @@ namespace de.thm.fsi.atp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImage = global::de.thm.fsi.atp.Properties.Resources.OsPlusBG;
-            this.ClientSize = new System.Drawing.Size(1880, 957);
+            this.ClientSize = new System.Drawing.Size(1900, 977);
             this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.comboBoxLecture);

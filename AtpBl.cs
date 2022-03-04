@@ -477,7 +477,6 @@ namespace de.thm.fsi.atp
         private void CheckLectureOver(object source, ElapsedEventArgs e)
         {
             PrepareMatching();
-            Write(prevIdLectureDate.ToString());
             if (currLectTable.Rows.Count == 0 && checkForPrevious == false && prevIdLectureDate > 0)
             {
                 checkForPrevious = true;
@@ -509,7 +508,6 @@ namespace de.thm.fsi.atp
             checkForPrevious = false;
             checkForStudents = false;
         }
-
 
         /// <summary>
         /// This closes all TCP/IP and database connections.
