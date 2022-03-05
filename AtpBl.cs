@@ -19,6 +19,7 @@ namespace de.thm.fsi.atp
         // For demo purposes some attributes are hard coded!
         ////////
         // Attributes for TCP/IP connection to RFID reader:
+        private static Thread tcpThread;
         private static readonly IPAddress localAddr = IPAddress.Parse("192.168.178.101");
         private static readonly int portPc = 8890;
         private static IPAddress readerAddr;
@@ -28,7 +29,7 @@ namespace de.thm.fsi.atp
         private static TcpClient clientOut;
         private static TcpClient clientIn;
         // Attributes for matching and datagrid output:
-        private static bool checkForStudents = false;
+        private static bool checkForStudents;
         private static DataController dc;
         private static int idLecture;
         private static int idGroup;
@@ -40,12 +41,12 @@ namespace de.thm.fsi.atp
         private static DataTable lecturesTable;
         private static DataTable studentTable;
         private static DataTable gridTable;
+        private static DataTable lecturesOfTodayTable;
         private static DataTable currStudentTable;
         private static DataTable currLectTable;
         private static DataTable currDocTable;
-        private static bool checkForPrevious = false;
+        private static bool checkForPrevious;
         private static DataTable prevStudentTable;
-        private static DataTable prevLectTable;
         private static DataTable prevDocTable;
         // Attributes for user interface:
         private static GuiController gc;
@@ -53,27 +54,44 @@ namespace de.thm.fsi.atp
         public AtpBl(string iReaderAddr)
         {
             readerAddr = IPAddress.Parse(iReaderAddr);
-
             dc = new DataController();
             gc = new GuiController(this);
 
             // Start own thread for TCP/IP listening loop
-            Thread tcpThread = new Thread(() => StartReaderConnection());
+            tcpThread = new Thread(() => StartReaderConnection());
             tcpThread.Start();
+            // Start timer to check for midnight and lecture to be over
+            StartTimerChecker();
+            // Initialize business logic
+            InitializeBl();
+            // Start demo output
+            WriteRoom();
+            WriteLecture();
+            gc.StartGui();
+        }
 
-            // Fill initial view
+        /// <summary>
+        /// This Initializes all tables and starts timer.
+        /// Used to start up and restart business logic.
+        /// </summary>
+        private void InitializeBl()
+        {
+            // Fill initial tables
             lecturesTable = dc.GetAllLecturesGroups();
             gc.FillComboBox(lecturesTable);
             PrepareMatching();
-            // Start timer thread to check for lecture to be over
-            Thread timerThread = new Thread(() => StartTimerChecker());
-            timerThread.Start();
+            FindAllLecturesOfToday();
 
-            // For demo output
-            WriteRoom();
-            WriteLecture();
+        }
 
-            gc.StartGui();
+        /// <summary>
+        /// This finds all lectures of the day for the room of the RFID reader.
+        /// </summary>
+        private void FindAllLecturesOfToday()
+        {
+            DateTime date = DateTime.Now;
+            string strDate = date.ToString("yyyyMMdd");
+            lecturesOfTodayTable = dc.GetAllLectForRoom(readerAddr.ToString(), strDate);
         }
 
         /// <summary>
@@ -102,7 +120,6 @@ namespace de.thm.fsi.atp
                 currDocTable = dc.GetDocent(idGroup, idLecture);
                 // Save in class attributes for previous lecture
                 prevStudentTable = currStudentTable;
-                prevLectTable = currLectTable;
                 prevDocTable = currDocTable;
                 prevIdLectureDate = currIdLectureDate;
             }
@@ -459,30 +476,50 @@ namespace de.thm.fsi.atp
         }
 
         /// <summary>
-        /// This starts a 15 seconds timer to check if a lecture is already over.
+        /// This starts a 30 seconds timer to check if a lecture is already over.
         /// </summary>
         private void StartTimerChecker()
         {
-            System.Timers.Timer currLectTimer = new System.Timers.Timer(15 * 1000);
+            System.Timers.Timer currLectTimer = new System.Timers.Timer(30 * 1000);
             currLectTimer.Elapsed += new ElapsedEventHandler(CheckLectureOver);
             currLectTimer.Start();
         }
 
         /// <summary>
-        /// This checks if there is a lecture going on.
-        /// If lecture has ended will start a 15 minutes timer to book all scans on previous lecture.
+        /// This checks if programm passed midnight and if reinitializes business logic.
+        /// This also checks if a lecture has ended.
+        /// If lecture has ended, will start a 15 minutes timer to book all scans on previous lecture.
         /// </summary>
         /// <param name="source">Object</param>
         /// <param name="e">Data for elapsed event</param>
         private void CheckLectureOver(object source, ElapsedEventArgs e)
         {
-            PrepareMatching();
-            if (currLectTable.Rows.Count == 0 && checkForPrevious == false && prevIdLectureDate > 0)
+            // Check for midnight
+            DateTime timeNow = DateTime.Now;
+            if (timeNow.Hour == 0 && timeNow.Minute == 0)
             {
-                checkForPrevious = true;
-                WriteLecture();
-                Thread timerThread = new Thread(() => StartTimerLectureOver());
-                timerThread.Start();
+                InitializeBl();
+            }
+            // Check if lecture is over
+            if (checkForPrevious == false && prevIdLectureDate > 0)
+            {
+                foreach (DataRow row in lecturesOfTodayTable.Rows)
+                {
+                    DateTime timeFrom = DateTime.Parse(row["zeitVon"].ToString());
+                    DateTime timeUntil = DateTime.Parse(row["zeitBis"].ToString());
+                    if (timeUntil.Hour == timeNow.Hour && timeUntil.Minute == timeNow.Minute && prevIdLectureDate == Convert.ToInt32(row["idLehrveranstaltungstermin"]))
+                    {
+                        checkForPrevious = true;
+                        PrepareMatching();
+                        WriteLecture();
+                        StartTimerLectureOver();
+                    }
+                    else if (checkForPrevious == false && ((timeFrom.Hour == timeNow.Hour && timeFrom.Minute == timeNow.Minute) || (timeFrom > timeNow)))
+                    {
+                        PrepareMatching();
+                        WriteLecture();
+                    }
+                }
             }
         }
 
